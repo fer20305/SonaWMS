@@ -1,0 +1,580 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0B2A42">
+<title>SONA Ingreso</title>
+<style>
+  :root {
+    --marino: #0B2A42; --marino2: #1C4C73; --naranja: #F47920; --naranja-claro: #FFE7D4;
+    --fondo: #EEF1F4; --panel: #FFFFFF; --linea: #D5DCE3; --texto: #1B2733; --tenue: #5D6B79;
+    --ok: #1E8E3E; --ok-claro: #E3F4E8; --aviso: #B7791F; --aviso-claro: #FFF5DB; --error: #C62828; --error-claro: #FDE7E7;
+    --info: #1565C0; --info-claro: #E3EEFB;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--fondo); color: var(--texto); font: 14px/1.45 "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif; }
+  button, input, select { font: inherit; }
+  .barra { background: var(--marino); color: #fff; padding: 10px 16px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 5; }
+  .barra .logo { width: 34px; height: 34px; border-radius: 8px; background: #fff1; display: grid; place-items: center; color: var(--naranja); font-weight: 900; font-size: 22px; }
+  .barra h1 { font-size: 17px; margin: 0; font-weight: 700; }
+  .barra .sub { font-size: 12px; opacity: .75; }
+  .barra .der { margin-left: auto; display: flex; align-items: center; gap: 10px; font-size: 12px; flex-wrap: wrap; justify-content: flex-end; }
+  .barra .btn { padding: 4px 10px; }
+  .vivo { display: inline-flex; align-items: center; gap: 6px; }
+  .vivo i { width: 8px; height: 8px; border-radius: 50%; background: #FF8A80; display: inline-block; }
+  .vivo.on i { background: #5BD17E; }
+  .franja { height: 3px; background: var(--naranja); }
+  main { padding: 12px 16px 40px; }
+  .kpis { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-bottom: 12px; }
+  .kpi { background: var(--panel); border: 1px solid var(--linea); border-radius: 12px; padding: 10px 12px; border-left: 4px solid var(--c, var(--marino2)); cursor: pointer; }
+  .kpi.act { box-shadow: 0 0 0 2px var(--c, var(--marino2)) inset; }
+  .kpi b { display: block; font-size: 26px; font-variant-numeric: tabular-nums; }
+  .kpi span { font-size: 12px; color: var(--tenue); }
+  .filtros { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; background: var(--panel); border-radius: 12px; padding: 10px 12px; margin-bottom: 12px; }
+  label.c { display: flex; flex-direction: column; font-size: 12px; color: var(--tenue); gap: 3px; }
+  input, select { border: 1px solid var(--linea); border-radius: 8px; padding: 7px 9px; background: #fff; color: var(--texto); min-width: 0; }
+  .btn { border: 1px solid var(--linea); background: #fff; color: var(--marino); border-radius: 8px; padding: 7px 14px; cursor: pointer; font-weight: 600; white-space: nowrap; }
+  .btn.pri { background: var(--naranja); border-color: var(--naranja); color: #fff; }
+  .btn.chico { padding: 3px 9px; font-size: 12.5px; }
+  .btn:disabled { opacity: .5; cursor: default; }
+  .btn:hover:not(:disabled) { filter: brightness(.96); }
+  .tabs { display: flex; gap: 4px; overflow-x: auto; }
+  .tabs button { border: 0; background: transparent; padding: 9px 14px; border-radius: 10px 10px 0 0; color: var(--tenue); cursor: pointer; white-space: nowrap; font-weight: 600; }
+  .tabs button.act { background: var(--panel); color: var(--marino); box-shadow: inset 0 3px 0 var(--naranja); }
+  .tabs button em { font-style: normal; background: #E3E8EE; border-radius: 99px; padding: 0 7px; margin-left: 6px; font-size: 12px; }
+  .tabs button.act em { background: var(--naranja-claro); color: #B4510A; }
+  .cuerpo { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 14px; align-items: start; }
+  .hoja { background: var(--panel); border-radius: 0 12px 12px 12px; padding: 12px; min-height: 55vh; min-width: 0; }
+  .lado { background: var(--panel); border-radius: 12px; padding: 14px; position: sticky; top: 66px; max-height: calc(100vh - 80px); overflow: auto; }
+  .lado h2 { margin: 0 0 8px; }
+  @media (max-width: 1000px) { .cuerpo { grid-template-columns: minmax(0, 1fr); } .lado { position: static; max-height: none; } main { padding: 10px 8px 30px; } .barra .sub { display: none; } }
+  .tabla { overflow-x: auto; border: 1px solid var(--linea); border-radius: 10px; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; }
+  th { background: #E9EEF3; color: var(--marino); text-align: left; font-weight: 600; padding: 7px 9px; white-space: nowrap; cursor: pointer; user-select: none; position: sticky; top: 0; }
+  td { padding: 6px 9px; border-top: 1px solid #EDF0F3; vertical-align: middle; }
+  td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; }
+  td.nw { white-space: nowrap; }
+  tr.clic { cursor: pointer; }
+  tr.clic:hover td { background: #FFF6EE; }
+  tr.sel td { background: var(--naranja-claro) !important; }
+  .mono { font-family: Consolas, "Cascadia Mono", monospace; }
+  .op { font-family: Consolas, "Cascadia Mono", monospace; font-weight: 700; color: var(--marino); }
+  .chip { display: inline-block; padding: 1px 9px; border-radius: 99px; font-size: 11.5px; font-weight: 700; background: #EEF0F2; color: var(--tenue); white-space: nowrap; }
+  .chip.ok { background: var(--ok-claro); color: var(--ok); } .chip.err { background: var(--error-claro); color: var(--error); }
+  .chip.av { background: var(--aviso-claro); color: var(--aviso); } .chip.inf { background: var(--info-claro); color: var(--info); }
+  .chip.nar { background: var(--naranja-claro); color: #B4510A; }
+  .barrita { width: 90px; height: 8px; background: #E6EAEE; border-radius: 99px; overflow: hidden; display: inline-block; vertical-align: middle; margin-right: 6px; }
+  .barrita s { display: block; height: 100%; background: var(--ok); text-decoration: none; }
+  h2 { font-size: 15px; color: var(--marino); margin: 14px 0 6px; }
+  .tenue { color: var(--tenue); }
+  .vacio { color: var(--tenue); padding: 24px; text-align: center; }
+  .error { background: var(--error-claro); color: var(--error); padding: 10px 12px; border-radius: 8px; font-weight: 600; margin: 8px 0; }
+  .aviso { background: var(--aviso-claro); color: #7A4F0E; padding: 8px 12px; border-radius: 8px; margin: 8px 0; }
+  .okbox { background: var(--ok-claro); color: #145C29; padding: 10px 12px; border-radius: 8px; margin: 8px 0; font-weight: 600; }
+  .pickers { display: flex; flex-direction: column; gap: 6px; margin: 8px 0; max-height: 46vh; overflow: auto; }
+  .pk { display: flex; align-items: center; gap: 8px; border: 1px solid var(--linea); border-radius: 10px; padding: 7px 10px; cursor: pointer; background: #fff; text-align: left; }
+  .pk:hover { border-color: var(--naranja); }
+  .pk.sel { border-color: var(--naranja); background: var(--naranja-claro); box-shadow: 0 0 0 1px var(--naranja) inset; }
+  .pk b { flex: 1; font-size: 13.5px; }
+  .pk small { color: var(--tenue); }
+  .ficha { border: 1px solid var(--linea); border-radius: 10px; padding: 9px 11px; margin-bottom: 8px; }
+  .ficha .t { font-weight: 700; color: var(--marino); }
+  .modal { position: fixed; inset: 0; background: #0B2A4266; display: grid; place-items: center; z-index: 20; padding: 12px; }
+  .modal > div { background: var(--panel); border-radius: 14px; padding: 18px; width: min(520px, 100%); max-height: 90vh; overflow: auto; display: flex; flex-direction: column; gap: 10px; }
+  .modal h2 { margin: 0; }
+  .login { max-width: 360px; margin: 10vh auto; background: var(--panel); border-radius: 14px; padding: 24px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 6px 30px #0B2A4214; }
+  .login h1 { margin: 0; color: var(--marino); font-size: 22px; }
+  .login p { margin: 0; color: var(--tenue); }
+  .fila { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .oculto { display: none !important; }
+  .toast { position: fixed; right: 16px; bottom: 16px; max-width: 420px; z-index: 30; }
+  .cuerpo { grid-template-columns: 340px minmax(0, 1fr); }
+  .bandeja { background: var(--panel); border-radius: 12px; padding: 10px; position: sticky; top: 66px; max-height: calc(100vh - 80px); overflow: auto; }
+  .ing { border: 1px solid var(--linea); border-left: 4px solid var(--c, var(--linea)); border-radius: 10px; padding: 8px 10px; margin-bottom: 7px; cursor: pointer; background: #fff; }
+  .ing:hover { border-color: var(--naranja); }
+  .ing.sel { background: var(--naranja-claro); border-color: var(--naranja); }
+  .ing .t { display: flex; justify-content: space-between; gap: 6px; font-weight: 700; color: var(--marino); }
+  .ing small { color: var(--tenue); display: block; }
+  .pasos { display: flex; flex-direction: column; gap: 10px; }
+  .paso { background: var(--panel); border: 1px solid var(--linea); border-radius: 12px; padding: 12px 14px; }
+  .paso > h3 { margin: 0 0 8px; font-size: 15px; color: var(--marino); display: flex; align-items: center; gap: 8px; }
+  .paso > h3 .nro { width: 24px; height: 24px; border-radius: 50%; background: #E3E8EE; color: var(--marino); display: grid; place-items: center; font-size: 13px; flex: none; }
+  .paso.hecho > h3 .nro { background: var(--ok); color: #fff; }
+  .paso.hecho { border-color: #B9E0C5; }
+  .grid2 { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 8px 12px; }
+  .dato { font-size: 12px; color: var(--tenue); } .dato b { display: block; color: var(--texto); font-size: 14px; }
+  .fotos { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+  .fotos a { width: 84px; height: 84px; border-radius: 8px; overflow: hidden; border: 1px solid var(--linea); display: block; position: relative; background: #F3F5F7; }
+  .fotos img { width: 100%; height: 100%; object-fit: cover; }
+  .fotos a i { position: absolute; left: 3px; bottom: 3px; font-style: normal; font-size: 10px; background: #000a; color: #fff; padding: 0 5px; border-radius: 5px; }
+  .camara { display: inline-flex; align-items: center; gap: 6px; }
+  .camara input { display: none; }
+  td input, td select { width: 100%; padding: 5px 7px; }
+  .modos { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+  .modos button { border: 1px solid var(--linea); background: #fff; border-radius: 99px; padding: 5px 12px; cursor: pointer; font-weight: 600; color: var(--tenue); }
+  .modos button.act { background: var(--marino); color: #fff; border-color: var(--marino); }
+  .log { font-size: 12.5px; max-height: 260px; overflow: auto; }
+  .log div { padding: 4px 0; border-top: 1px solid #EDF0F3; }
+  .volver { display: none; }
+  @media (max-width: 1000px) {
+    .cuerpo { grid-template-columns: minmax(0, 1fr); }
+    .bandeja { position: static; max-height: none; }
+    body.ficha-abierta .bandeja { display: none; }
+    body:not(.ficha-abierta) #ficha { display: none; }
+    .volver { display: inline-block; }
+  }
+</style>
+</head>
+<body>
+<div id="pantallaLogin" class="login oculto">
+  <h1>SONA <span style="color:var(--naranja)">Ingreso</span></h1>
+  <p>Ingresá con tu usuario y clave del WMS.</p>
+  <label class="c">Usuario<input id="lUsuario" autocomplete="username" autocapitalize="characters"></label>
+  <label class="c">Clave<input id="lClave" type="password" autocomplete="current-password"></label>
+  <div id="lError" class="error oculto"></div>
+  <button class="btn pri" id="lEntrar">Ingresar</button>
+  <p style="font-size:12px">Hace falta el permiso "Módulo de ingreso" (ZUSR › Permisos).</p>
+</div>
+
+<div id="app" class="oculto">
+  <div class="barra">
+    <div class="logo">S</div>
+    <div><h1>SONA Ingreso</h1><div class="sub" id="sub"></div></div>
+    <div class="der">
+      <span class="vivo" id="vivo"><i></i><span>Conectando…</span></span>
+      <button class="btn" id="bLes" title="Tu usuario del LES (Ingresos)">LES: <span id="lesU">—</span></button>
+      <button class="btn" id="bDiag" title="Captura de solo lectura del LES y del WMS para ajustar SONA">🔍 Diagnóstico</button>
+      <button class="btn" id="bRefrescar">⟳</button>
+      <button class="btn" id="salir">Salir</button>
+    </div>
+  </div>
+  <div class="franja"></div>
+  <main>
+    <div class="cuerpo">
+      <aside class="bandeja">
+        <div class="fila" style="margin-bottom:8px">
+          <input id="fTexto" placeholder="N° recepción, remito, cliente…" style="flex:1" inputmode="search">
+        </div>
+        <div class="modos" id="fEstado"></div>
+        <div id="lista"><div class="vacio">Cargando…</div></div>
+      </aside>
+      <section id="ficha"><div class="paso vacio">Elegí un ingreso de la lista o buscá el N° de recepción.</div></section>
+    </div>
+  </main>
+</div>
+
+<div id="modal" class="modal oculto"><div id="modalCuerpo"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const num = (v, d = 0) => v == null || v === "" ? "" : Number(v).toLocaleString("es-AR", { maximumFractionDigits: d });
+const hora = iso => { if (!iso) return ""; const d = new Date(iso); return d.toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit" }) + " " + d.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" }); };
+
+// ------------------------------------------------------------ sesión (desde la app llega el token en #t=…)
+let token = null; try { token = localStorage.getItem("sona_ing_token"); } catch {}
+{ const m = location.hash.match(/[#&]t=([^&]+)/); if (m) { token = decodeURIComponent(m[1]); try { localStorage.setItem("sona_ing_token", token); } catch {} history.replaceState(null, "", location.pathname); } }
+let yo = null;
+const conT = u => u + (u.includes("?") ? "&" : "?") + "token=" + encodeURIComponent(token);
+async function api(ruta, metodo = "GET", cuerpo, enModalLes) {
+  const esForm = cuerpo instanceof FormData;
+  const r = await fetch(ruta, { method: metodo, headers: { Authorization: "Bearer " + token, ...(cuerpo && !esForm ? { "Content-Type": "application/json" } : {}) }, body: cuerpo ? (esForm ? cuerpo : JSON.stringify(cuerpo)) : undefined });
+  const j = await r.json().catch(() => ({}));
+  if (r.status === 401) { salir(); throw new Error(j.error || "Sesión vencida"); }
+  if (r.status === 428) { if (!enModalLes) pedirLes(j.error); throw new Error(j.error); }
+  if (!r.ok) throw new Error(j.error || ("Error " + r.status));
+  return j;
+}
+async function entrar() {
+  const u = $("#lUsuario").value.trim(), c = $("#lClave").value;
+  if (!u || !c) return;
+  $("#lEntrar").disabled = true; $("#lError").classList.add("oculto");
+  try {
+    const r = await fetch("/api/login", { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ usuario: u, clave: c, web: true, dispositivo: "WEB-ING-" + u.toUpperCase(), modelo: navigator.userAgent.slice(0, 60), version: "web" }) });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(j.error || "No se pudo ingresar");
+    token = j.token; try { localStorage.setItem("sona_ing_token", token); } catch {}
+    iniciar();
+  } catch (e) { $("#lError").textContent = e.message; $("#lError").classList.remove("oculto"); }
+  finally { $("#lEntrar").disabled = false; }
+}
+function salir() { token = null; try { localStorage.removeItem("sona_ing_token"); } catch {} if (ws) try { ws.close(); } catch {} $("#app").classList.add("oculto"); $("#pantallaLogin").classList.remove("oculto"); }
+$("#lEntrar").onclick = entrar;
+$("#lClave").onkeydown = e => { if (e.key === "Enter") entrar(); };
+$("#salir").onclick = salir;
+
+function toast(html, tipo = "okbox", ms = 6000) {
+  const d = document.createElement("div"); d.className = tipo; d.style.boxShadow = "0 6px 24px #0B2A4230"; d.innerHTML = html;
+  $("#toast").appendChild(d); setTimeout(() => d.remove(), ms);
+}
+function modal(html) { $("#modalCuerpo").innerHTML = html; $("#modal").classList.remove("oculto"); }
+function cerrarModal() { $("#modal").classList.add("oculto"); }
+$("#modal").onclick = e => { if (e.target.id === "modal") cerrarModal(); };
+
+// botón ocupado mientras corre la acción; muestra el error
+async function accion(btn, fn, ok) {
+  const txt = btn?.innerHTML; if (btn) { btn.disabled = true; btn.innerHTML = "⏳ " + txt; }
+  try { const r = await fn(); if (ok) toast(typeof ok === "function" ? ok(r) : ok); return r; }
+  catch (e) { toast("✖ " + esc(e.message), "error", 12000); }
+  finally { if (btn) { btn.disabled = false; btn.innerHTML = txt; } }
+}
+
+// ------------------------------------------------------------ usuario del LES (una vez; queda guardado en el servidor)
+function pedirLes(motivo) {
+  modal(`<h2>Mi usuario del LES (Ingresos)</h2>
+    ${motivo ? `<div class="error" style="margin:0">${esc(motivo)}</div>` : ""}
+    <p class="tenue" style="margin:0">Es el usuario con el que entrás a Ingresos pendientes del LES (si no cargás nada, SONA prueba con tu usuario y clave del WMS).
+      Se guarda cifrado en el servidor y sirve para la PC y el celular. También se cambia en el panel web › Mis credenciales.</p>
+    <label class="c">Usuario del LES<input id="mLesU" autocapitalize="characters" value="${esc($("#lesU").dataset.u || "")}"></label>
+    <label class="c">Clave del LES<input id="mLesC" type="password"></label>
+    <div class="fila"><button class="btn pri" id="mLesOk">Probar y guardar</button><button class="btn" onclick="cerrarModal()">Cancelar</button></div>
+    <div id="mLesRes"></div>`);
+  $("#mLesOk").onclick = async e => {
+    const b = e.target; b.disabled = true; b.textContent = "Probando…"; $("#mLesRes").innerHTML = "";
+    try {
+      const r = await api("/api/yo/les", "PUT", { usuario: $("#mLesU").value.trim(), clave: $("#mLesC").value }, true);
+      mostrarLes(r); cerrarModal(); toast("LES conectado ✔"); cargarBandeja();
+    } catch (x) { $("#mLesRes").innerHTML = `<div class="error">${esc(x.message)}</div>`; }
+    finally { b.disabled = false; b.textContent = "Probar y guardar"; }
+  };
+}
+function mostrarLes(r) { $("#lesU").textContent = r.usuario || "cargar"; $("#lesU").dataset.u = r.usuario || ""; }
+$("#bLes").onclick = () => pedirLes();
+
+// ------------------------------------------------------------ bandeja
+let bandeja = [], sla = [], estadoFiltro = "", actual = null, ficha = null, modoCont = "pre";
+const COLOR = { "PENDIENTE DE DESCARGA": "var(--info)", "PEND INGRESO WMS": "var(--naranja)", "PEND VALIDAR": "var(--ok)", "DOCUMENTACION INCOMPLETA": "var(--error)" };
+function vencido(i) {
+  const s = sla.find(x => (x.estado || "").toUpperCase() === (i.estado || "").toUpperCase());
+  if (!s || !s.horas || !i.cambioEstado) return false;
+  return (Date.now() - new Date(i.cambioEstado)) / 36e5 > s.horas;
+}
+async function cargarBandeja() {
+  try { const r = await api("/api/ingresos"); bandeja = r.ingresos || []; sla = r.sla || []; mostrarLes({ usuario: r.lesUsuario }); pintarBandeja(); }
+  catch (e) { $("#lista").innerHTML = `<div class="error">${esc(e.message)}</div>`; }
+}
+function pintarBandeja() {
+  const estados = [...new Set(bandeja.map(i => i.estado).filter(Boolean))];
+  $("#fEstado").innerHTML = [["", "Todos"], ...estados.map(e => [e, e])].map(([v, t]) =>
+    `<button data-e="${esc(v)}" class="${v === estadoFiltro ? "act" : ""}">${esc(t.toLowerCase())} ${v ? `<em>${bandeja.filter(i => i.estado === v).length}</em>` : ""}</button>`).join("");
+  $("#fEstado").querySelectorAll("button").forEach(b => b.onclick = () => { estadoFiltro = b.dataset.e; pintarBandeja(); });
+  const q = $("#fTexto").value.trim().toLowerCase();
+  const filas = bandeja.filter(i => (!estadoFiltro || i.estado === estadoFiltro) &&
+    (!q || [i.nroRecepcion, i.remito, i.cliente, i.proveedor, i.recepcionWms].some(x => String(x ?? "").toLowerCase().includes(q))));
+  $("#lista").innerHTML = filas.length ? filas.map(i => `
+    <div class="ing ${actual === i.id ? "sel" : ""}" data-id="${i.id}" style="--c:${COLOR[(i.estado || "").toUpperCase()] || "var(--linea)"}">
+      <div class="t"><span>N° ${esc(i.nroRecepcion || i.id)}</span>${vencido(i) ? `<span class="chip err">fuera de SLA</span>` : ""}</div>
+      <div>${esc(i.cliente || "")}</div>
+      <small>${esc(i.proveedor || "")} · Remito ${esc(i.remito || "—")} · ${num(i.pallets)} pallet(s)</small>
+      <small><span class="chip">${esc((i.estado || "").toLowerCase())}</span> ${i.documentacionIncompleta ? `<span class="chip err">doc. incompleta</span>` : ""}
+        ${i.recepcionWms ? `<span class="chip inf">WMS ${esc(i.recepcionWms)}</span>` : ""} ${i.palletsSona ? `<span class="chip ${i.recibidos === i.palletsSona ? "ok" : "av"}">${i.recibidos}/${i.palletsSona} recibidos</span>` : ""}</small>
+    </div>`).join("") : `<div class="vacio">${q ? "No hay ingresos con " + esc(q) : "Sin ingresos pendientes."}</div>`;
+  $("#lista").querySelectorAll(".ing").forEach(d => d.onclick = () => abrir(+d.dataset.id));
+}
+$("#fTexto").oninput = pintarBandeja;
+$("#fTexto").onkeydown = e => { if (e.key === "Enter") { const q = $("#fTexto").value.trim(); const i = bandeja.find(x => String(x.nroRecepcion) === q); if (i) abrir(i.id); } };
+$("#bRefrescar").onclick = () => { cargarBandeja(); if (actual) abrir(actual); };
+
+// ------------------------------------------------------------ ficha
+async function abrir(id) {
+  actual = id; document.body.classList.add("ficha-abierta"); pintarBandeja();
+  if (!ficha || ficha.id !== id) $("#ficha").innerHTML = `<div class="paso vacio">Trayendo la precarga del LES…</div>`;
+  try { ficha = await api("/api/ingresos/" + id); pintarFicha(); }
+  catch (e) { $("#ficha").innerHTML = `<div class="paso"><button class="btn volver" onclick="document.body.classList.remove('ficha-abierta')">← Volver</button><div class="error">${esc(e.message)}</div></div>`; }
+}
+
+const paso = (n, titulo, hecho, cuerpo) => `<div class="paso ${hecho ? "hecho" : ""}"><h3><span class="nro">${hecho ? "✓" : n}</span>${titulo}</h3>${cuerpo}</div>`;
+const fotoLes = u => conT("/api/ingresos/imagen-les?url=" + encodeURIComponent(u));
+const fotoSona = id => conT("/api/ingresos/fotos/" + id);
+const camara = (tipo, codigo, texto) => `<label class="btn camara">📷 ${texto}<input type="file" accept="image/*" capture="environment" data-tipo="${tipo}" data-codigo="${esc(codigo || "")}" ${tipo === "pallet" ? "multiple" : ""}></label>`;
+
+function pintarFicha() {
+  const f = ficha, s = f.sona || {};
+  const descargado = !!s.descargado || ["PEND INGRESO WMS", "PEND VALIDAR"].includes((f.estado || "").toUpperCase());
+  const arts = f.articulos || [];
+  const misFotos = t => (f.fotos || []).filter(x => x.tipo === t);
+  const opArts = sel => arts.map(a => `<option ${a.codigo === sel ? "selected" : ""}>${esc(a.codigo)}</option>`).join("");
+  const conts = f.contenedores || [];
+  const totalCont = {}; conts.forEach(c => totalCont[c.articulo] = (totalCont[c.articulo] || 0) + (c.cantidad || 0));
+  const html = [];
+
+  html.push(`<div class="paso"><div class="fila" style="justify-content:space-between">
+      <div><button class="btn volver chico" onclick="document.body.classList.remove('ficha-abierta')">← Lista</button>
+      <b style="font-size:18px;color:var(--marino)">Recepción N° ${esc(f.nroRecepcion || f.id)}</b> <span class="chip">${esc((f.estado || "").toLowerCase())}</span></div>
+      <a class="btn chico" href="${conT("/api/ingresos/" + f.id + "/caratulas.pdf")}" target="_blank">Carátulas LES (PDF)</a></div>
+    <div class="grid2" style="margin-top:8px">
+      <div class="dato">Cliente<b>${esc(f.cliente || "")} <span class="tenue">(${f.clienteId})</span></b></div>
+      <div class="dato">Proveedor<b>${esc(f.proveedor || "")}</b></div>
+      <div class="dato">Remito<b>${esc(f.remito || "—")}</b></div>
+      <div class="dato">Pallets declarados<b>${num(f.palletsDeclarados)}</b></div>
+      ${f.observacion ? `<div class="dato" style="grid-column:1/-1">Observación<b>${esc(f.observacion)}</b></div>` : ""}
+      ${f.observacionEstado ? `<div class="dato" style="grid-column:1/-1">Obs. de estado<b>${esc(f.observacionEstado)}</b></div>` : ""}
+    </div>
+    <div class="tabla" style="margin-top:8px"><table><thead><tr><th>Artículo</th><th>Descripción</th><th class="n">Cantidad</th><th>POP</th><th class="n">En pallets</th></tr></thead><tbody>
+    ${arts.map(a => `<tr><td class="op">${esc(a.codigo)}</td><td>${esc(a.descripcion)}${a.requiereValidacion ? ` <span class="chip err">validar en LES</span>` : ""}</td><td class="n">${num(a.cantidad, 2)}</td>
+      <td>${a.fotoPop ? `<a href="${fotoLes(a.fotoPop)}" target="_blank"><span class="chip ok">foto ✓</span></a>` : (f.popFaltantes || []).includes(a.codigo) ? camara("pop", a.codigo, "POP") : `<span class="chip">—</span>`}</td>
+      <td class="n">${totalCont[a.codigo] ? `<span class="chip ${Math.abs(totalCont[a.codigo] - a.cantidad) < .001 ? "ok" : "av"}">${num(totalCont[a.codigo], 2)}</span>` : ""}</td></tr>`).join("")}
+    </tbody></table></div></div>`);
+
+  // 1 · descarga
+  html.push(paso(1, "Descarga (LES)", descargado, `
+    <div class="grid2">
+      <label class="c">Pallets descargados<input id="dPallets" type="number" min="0" inputmode="numeric" value="${s.pallets || f.palletsDeclarados || ""}" ${descargado ? "disabled" : ""}></label>
+      <label class="c">Depósito<select id="dDeposito" ${descargado ? "disabled" : ""}>${["", "SONA", "GAPP"].concat(s.deposito && !["SONA", "GAPP"].includes(s.deposito) ? [s.deposito] : []).map(d => `<option ${d === (s.deposito || f.deposito || "") ? "selected" : ""}>${d}</option>`).join("")}</select></label>
+      <label class="c" style="flex-direction:row;align-items:center;gap:6px;margin-top:18px"><input id="dDesglosar" type="checkbox" ${s.aDesglosar ? "checked" : ""} ${descargado ? "disabled" : ""}> A desglosar</label>
+    </div>
+    <label class="c" style="margin-top:8px">Observación de la descarga<input id="dObs" value="${esc(s.observacion || "")}" ${descargado ? "disabled" : ""}></label>
+    <div class="dato" style="margin-top:10px">Fotos de los pallets</div>
+    <div class="fotos">${(f.fotosPallets || []).map(x => `<a href="${fotoLes(x.url)}" target="_blank"><img loading="lazy" src="${fotoLes(x.url)}"><i>LES</i></a>`).join("")}
+      ${misFotos("pallet").filter(x => !x.subida).map(x => `<a href="${fotoSona(x.id)}" target="_blank"><img src="${fotoSona(x.id)}"><i style="background:var(--error)">sin subir</i></a>`).join("")}</div>
+    <div class="fila">${camara("pallet", "", "Foto de pallet")} ${camara("remito", "", misFotos("remito").length || f.tieneRemitoFirmado ? "Remito firmado ✓ (otra)" : "Remito firmado")}
+      ${misFotos("remito").length ? `<a href="${fotoSona(misFotos("remito").at(-1).id)}" target="_blank" class="chico">ver remito</a>` : ""}
+      ${f.urlRemitoFirmado ? `<a href="${fotoLes(f.urlRemitoFirmado)}" target="_blank" class="chico">remito en LES</a>` : ""}</div>
+    <div class="fila" style="margin-top:10px">${descargado ? `<span class="okbox" style="margin:0">Descarga confirmada${s.descargado ? " " + hora(s.descargado) : ""}</span>` :
+      `<button class="btn" id="bGuardarDesc">Guardar</button><button class="btn pri" id="bConfDesc">Confirmar descarga en el LES</button>`}</div>`));
+
+  // 2 · artículos en el WMS
+  const ultArt = (f.eventos || []).find(e => e.paso === "articulos");
+  html.push(paso(2, "Artículos en el WMS", !!(ultArt && ultArt.ok), `
+    <div id="estArts" class="fila tenue">Verificá que los artículos existan y estén configurados en el WMS (empresa ${f.clienteId}).</div>
+    <div class="fila" style="margin-top:8px"><button class="btn" id="bVerificar">Verificar artículos</button></div>`));
+
+  // 3 · contenedores
+  const editable = c => !c.recibido;
+  html.push(paso(3, "Contenedores (pallets)", conts.length > 0 && conts.every(c => c.contenedor), `
+    <div class="modos" id="modos">
+      <button data-m="pre" class="${modoCont === "pre" ? "act" : ""}">Ya impresos (escanear)</button>
+      <button data-m="sona" class="${modoCont === "sona" ? "act" : ""}">Generar desde SONA</button>
+      <button data-m="les" class="${modoCont === "les" ? "act" : ""}">Generar en el LES (Imprimir todo)</button>
+    </div>
+    <div class="aviso" style="margin-top:0">${modoCont === "pre" ? "Escaneá o tipeá el número de cada contenedor (PC-…, PP-…) con su artículo y cantidad." :
+      modoCont === "sona" ? "Cargá los pallets con artículo y cantidad y dejá el contenedor vacío: SONA pide los números al LES y las etiquetas salen por la impresora de SONA." :
+      "Experimental: genera las etiquetas en el LES como «Imprimir todo». Los números que devuelva se cargan solos."}</div>
+    <div class="fila" style="margin-bottom:8px">
+      <label class="c">Artículo<select id="aArt">${opArts()}</select></label>
+      <label class="c">Pallets<input id="aN" type="number" min="1" value="1" style="width:80px" inputmode="numeric"></label>
+      <label class="c">Cant. por pallet<input id="aCant" type="number" min="0" step="any" style="width:110px" inputmode="decimal"></label>
+      <label class="c">Lote<input id="aLote" value="1" style="width:80px"></label>
+      <button class="btn" id="bAgregar" style="align-self:end">+ Agregar</button>
+    </div>
+    <div class="tabla"><table><thead><tr><th>#</th><th>Contenedor</th><th>Artículo</th><th class="n">Cantidad</th><th>Lote</th><th>Estado</th><th></th></tr></thead><tbody id="tCont">
+    ${conts.map(c => `<tr data-id="${c.id}">
+      <td>${c.orden}</td>
+      <td>${editable(c) ? `<input class="cCont mono" value="${esc(c.contenedor || "")}" placeholder="${modoCont === "sona" ? "(lo genera SONA)" : "escanear…"}" autocapitalize="characters">` : `<span class="op">${esc(c.contenedor)}</span>`}</td>
+      <td>${editable(c) ? `<select class="cArt">${opArts(c.articulo)}</select>` : esc(c.articulo)}</td>
+      <td class="n">${editable(c) ? `<input class="cCant" type="number" step="any" value="${c.cantidad ?? ""}" style="width:100px" inputmode="decimal">` : num(c.cantidad, 2)}</td>
+      <td>${editable(c) ? `<input class="cLote" value="${esc(c.lote || "")}" style="width:70px">` : esc(c.lote || "")}</td>
+      <td>${c.recibido ? `<span class="chip ok">recibido</span>${c.guardadoEn ? ` <span class="chip inf">en ${esc(c.guardadoEn)}</span>` : ""}` : c.respuesta ? `<span class="chip err" title="${esc(c.respuesta)}">${esc(c.respuesta.slice(0, 40))}</span>` : `<span class="chip">pendiente</span>`}</td>
+      <td class="nw">${c.contenedor ? `<a class="btn chico" target="_blank" href="${conT("/api/etiquetas/" + encodeURIComponent(c.contenedor))}">🏷</a>` : ""} ${editable(c) ? `<button class="btn chico cQuitar">✕</button>` : ""}</td></tr>`).join("")}
+    </tbody></table></div>
+    <div class="fila" style="margin-top:8px">
+      <button class="btn" id="bGuardarCont">Guardar contenedores</button>
+      ${modoCont === "sona" ? `<label class="c">Tipo<select id="sPref"><option>PP</option><option>PC</option><option value="BULTO">Bultos</option></select></label><button class="btn pri" id="bGenSona" style="align-self:end">Generar contenedores faltantes</button>` : ""}
+      ${modoCont === "les" ? `<label class="c">Artículo<select id="lArt">${opArts()}</select></label><label class="c">Tipo<select id="lPref"><option>PC</option><option>PP</option><option>Bultos</option></select></label><label class="c">Cantidad<input id="lCant" type="number" min="1" value="1" style="width:80px"></label><button class="btn pri" id="bGenLes" style="align-self:end">Generar en el LES</button>` : ""}
+    </div>`));
+
+  // 4 · recepción WMS
+  html.push(paso(4, "Recepción en el WMS", !!s.recepcionWms, s.recepcionWms ?
+    `<div class="okbox">Recepción <b>${esc(s.recepcionWms)}</b> creada${s.comprobante ? ` · <a target="_blank" href="${conT("/api/ingresos/" + f.id + "/recepcion.pdf")}">comprobante</a>` : ""}</div>` : `
+    <div class="grid2">
+      <label class="c" style="grid-column:span 2">Proveedor del WMS<select id="rProv"><option value="">(cargando…)</option></select></label>
+      <label class="c">Centro emisor<input id="rCe" type="number" value="${s.centroEmisor || 1}" inputmode="numeric"></label>
+      <label class="c">Letra<input id="rLetra" value="${esc(s.letra || "R")}" maxlength="1" autocapitalize="characters"></label>
+      <label class="c">Fecha de emisión<input id="rFecha" type="date" value="${s.fechaEmision || new Date().toLocaleDateString("sv-SE")}"></label>
+    </div>
+    <p class="tenue" style="margin:6px 0">Doc. externo = N° de recepción del LES (${esc(f.nroRecepcion || "")}). Los renglones salen de los contenedores cargados (o de lo que pide el LES).</p>
+    <div class="fila"><button class="btn pri" id="bRecepcion">Crear recepción en el WMS</button>
+      <span class="tenue">o ya existe:</span><input id="rNro" placeholder="N° recepción" style="width:110px" inputmode="numeric"><button class="btn" id="bVincular">Vincular</button></div>`));
+
+  // 5 · recibir
+  const pendRecibir = conts.filter(c => !c.recibido).length;
+  html.push(paso(5, "Recibir contenedores (recepción por contenedor)", conts.length > 0 && pendRecibir === 0, `
+    <p class="tenue" style="margin:0 0 8px">${conts.length ? `${conts.length - pendRecibir} de ${conts.length} recibidos.` : "Cargá los contenedores en el paso 3."}</p>
+    <button class="btn pri" id="bRecibir" ${!s.recepcionWms || !pendRecibir ? "disabled" : ""}>Recibir ${pendRecibir || ""} contenedor(es) en el WMS</button>`));
+
+  // 6 · cierre
+  html.push(paso(6, "Carátulas y cierre en el LES", !!s.cerrado, `
+    <div class="fila">
+      <a class="btn" href="${conT("/api/ingresos/" + f.id + "/caratulas.pdf")}" target="_blank">Ver carátulas</a>
+      <button class="btn pri" id="bImpCar" title="Abre el diálogo de impresión de esta computadora">🖨 Imprimir carátulas (esta PC)</button>
+      <button class="btn" id="bImpCarSrv" title="Impresora configurada en la PC del servidor SONA">en el servidor</button>
+      ${s.cerrado ? `<span class="okbox" style="margin:0">Procesado ${hora(s.cerrado)}</span>` : `<button class="btn pri" id="bCerrar">Procesar en el LES (Pend. validar)</button>`}
+    </div>`));
+
+  html.push(`<div class="paso"><h3>Registro</h3><div class="log">${(f.eventos || []).map(e => `<div><span class="tenue">${hora(e.hora)} · ${esc(e.usuario)}</span> <span class="chip ${e.ok ? "ok" : "err"}">${esc(e.paso)}</span> ${esc(e.mensaje || "")}</div>`).join("") || `<span class="tenue">Sin movimientos.</span>`}</div></div>`);
+
+  $("#ficha").innerHTML = `<div class="pasos">${html.join("")}</div>`;
+  enganchar();
+}
+
+function datosDescarga() {
+  return { pallets: +$("#dPallets").value || null, deposito: $("#dDeposito").value || null, observacion: $("#dObs").value, aDesglosar: $("#dDesglosar").checked };
+}
+function leerContenedores() {
+  return [...document.querySelectorAll("#tCont tr")].filter(tr => tr.querySelector(".cArt")).map(tr => ({
+    contenedor: tr.querySelector(".cCont").value.trim() || null, articulo: tr.querySelector(".cArt").value,
+    cantidad: +tr.querySelector(".cCant").value || null, lote: tr.querySelector(".cLote").value.trim() || null }));
+}
+const guardarConts = () => api(`/api/ingresos/${ficha.id}/contenedores`, "PUT", leerContenedores());
+
+// achica la foto en el celular antes de subirla (máx. 1600 px, JPEG)
+async function achicar(file) {
+  try {
+    const img = await createImageBitmap(file);
+    const k = Math.min(1, 1600 / Math.max(img.width, img.height));
+    const cv = document.createElement("canvas"); cv.width = Math.round(img.width * k); cv.height = Math.round(img.height * k);
+    cv.getContext("2d").drawImage(img, 0, 0, cv.width, cv.height);
+    return await new Promise(r => cv.toBlob(b => r(b || file), "image/jpeg", .82));
+  } catch { return file; }
+}
+
+function enganchar() {
+  const id = ficha.id;
+  document.querySelectorAll(".camara input").forEach(inp => inp.onchange = async () => {
+    const files = [...inp.files]; if (!files.length) return;
+    const lbl = inp.parentElement;
+    for (const f of files) {
+      const fd = new FormData();
+      fd.append("tipo", inp.dataset.tipo); if (inp.dataset.codigo) fd.append("codigo", inp.dataset.codigo);
+      fd.append("foto", await achicar(f), (f.name || "foto").replace(/\.\w+$/, "") + ".jpg");
+      await accion(lbl, () => api(`/api/ingresos/${id}/fotos`, "POST", fd), r => r.subida ? "Foto subida al LES ✔" : "Foto guardada ✔");
+    }
+    abrir(id);
+  });
+  $("#bGuardarDesc") && ($("#bGuardarDesc").onclick = e => accion(e.target, () => api(`/api/ingresos/${id}/descarga`, "PUT", datosDescarga()), "Guardado"));
+  $("#bConfDesc") && ($("#bConfDesc").onclick = e => accion(e.target, async () => {
+    await api(`/api/ingresos/${id}/descarga`, "PUT", datosDescarga());
+    const r = await api(`/api/ingresos/${id}/descarga/confirmar`, "POST"); abrir(id); cargarBandeja(); return r;
+  }, r => esc(r.mensaje)));
+
+  $("#bVerificar").onclick = e => accion(e.target, async () => {
+    const r = await api(`/api/ingresos/${id}/articulos/verificar`, "POST");
+    $("#estArts").innerHTML = r.articulos.map(a => a.estado === "ok" ? `<span class="chip ok">${esc(a.codigo)} ✓</span>` :
+      a.estado === "no_configurado" ? `<span class="chip av">${esc(a.codigo)}: sin configurar</span> <button class="btn chico bConf" data-c="${esc(a.codigo)}">Configurar</button>` :
+      `<span class="chip err">${esc(a.codigo)}: no existe en el WMS</span> <span class="tenue">— darlo de alta en el WMS y volver a verificar</span>`).join(" ");
+    document.querySelectorAll(".bConf").forEach(b => b.onclick = () => accion(b, async () => {
+      const x = await api(`/api/ingresos/${id}/articulos/configurar`, "POST", { codigo: b.dataset.c });
+      if (!x.ok) throw new Error(x.mensaje); $("#bVerificar").click(); return x;
+    }, x => esc(b.dataset.c + ": " + x.mensaje)));
+  });
+
+  $("#modos").querySelectorAll("button").forEach(b => b.onclick = () => { modoCont = b.dataset.m; pintarFicha(); });
+  $("#bAgregar").onclick = e => accion(e.target, async () => {
+    const n = Math.max(1, +$("#aN").value || 1), cant = +$("#aCant").value || null;
+    const l = leerContenedores();
+    for (let i = 0; i < n; i++) l.push({ contenedor: null, articulo: $("#aArt").value, cantidad: cant, lote: $("#aLote").value.trim() || null });
+    await api(`/api/ingresos/${id}/contenedores`, "PUT", l); await abrir(id);
+    document.querySelector("#tCont tr:last-child .cCont")?.focus();
+  });
+  document.querySelectorAll(".cQuitar").forEach(b => b.onclick = () => { b.closest("tr").remove(); accion(null, async () => { await guardarConts(); abrir(id); }); });
+  // escáner: Enter pasa al siguiente contenedor
+  document.querySelectorAll(".cCont").forEach((inp, i, todos) => inp.onkeydown = ev => { if (ev.key === "Enter") { ev.preventDefault(); (todos[i + 1] || $("#bGuardarCont")).focus(); } });
+  $("#bGuardarCont").onclick = e => accion(e.target, async () => { await guardarConts(); await abrir(id); }, "Contenedores guardados");
+  $("#bGenSona") && ($("#bGenSona").onclick = e => accion(e.target, async () => {
+    await guardarConts();
+    const r = await api(`/api/ingresos/${id}/contenedores/sona`, "POST", { prefijo: $("#sPref").value }); await abrir(id); return r;
+  }, r => `Contenedores: ${esc(r.contenedores.join(", "))} · imprimí las etiquetas con 🏷`));
+  $("#bGenLes") && ($("#bGenLes").onclick = e => accion(e.target, async () => {
+    const r = await api(`/api/ingresos/${id}/contenedores/les`, "POST", { codigo: $("#lArt").value, prefijo: $("#lPref").value, cantidad: +$("#lCant").value || 1 });
+    if (r.contenedores?.length) {
+      const l = leerContenedores(); let k = 0;
+      for (const c of l) if (!c.contenedor && c.articulo === $("#lArt").value && k < r.contenedores.length) c.contenedor = r.contenedores[k++];
+      while (k < r.contenedores.length) l.push({ contenedor: r.contenedores[k++], articulo: $("#lArt").value, cantidad: null, lote: "1" });
+      await api(`/api/ingresos/${id}/contenedores`, "PUT", l);
+    }
+    await abrir(id); return r;
+  }, r => r.contenedores?.length ? "LES generó: " + esc(r.contenedores.join(", ")) : "El LES respondió OK pero sin números de contenedor: escanealos."));
+
+  if ($("#rProv")) api(`/api/ingresos/${id}/proveedores`).then(p => {
+    const sug = new Set((p.sugeridos || []).map(x => x.codigo));
+    $("#rProv").innerHTML = `<option value="">— elegir —</option>` +
+      (p.sugeridos?.length ? `<optgroup label="Sugeridos">${p.sugeridos.map(x => `<option value="${esc(x.codigo)}">${esc(x.nombre)} (${esc(x.codigo)})</option>`).join("")}</optgroup>` : "") +
+      `<optgroup label="Todos">${(p.todos || []).filter(x => !sug.has(x.codigo)).map(x => `<option value="${esc(x.codigo)}">${esc(x.nombre)} (${esc(x.codigo)})</option>`).join("")}</optgroup>`;
+    if (p.elegido) $("#rProv").value = p.elegido;
+  }).catch(e => { $("#rProv").innerHTML = `<option value="">(error: ${esc(e.message)})</option>`; });
+  $("#bRecepcion") && ($("#bRecepcion").onclick = e => accion(e.target, async () => {
+    if (!$("#rProv").value) throw new Error("Elegí el proveedor del WMS.");
+    if ((ficha.contenedores || []).some(c => !c.recibido)) await guardarConts();
+    const r = await api(`/api/ingresos/${id}/recepcion`, "POST", { proveedor: $("#rProv").value, centroEmisor: +$("#rCe").value || 1, letra: $("#rLetra").value, fechaEmision: $("#rFecha").value || null });
+    if (!r.ok) throw new Error(r.mensaje || "El WMS no grabó la recepción.");
+    await abrir(id); cargarBandeja(); return r;
+  }, r => `Recepción <b>${esc(r.numero)}</b> creada en el WMS`));
+  $("#bVincular") && ($("#bVincular").onclick = e => accion(e.target, async () => {
+    if (!$("#rNro").value.trim()) throw new Error("Poné el número de recepción del WMS.");
+    const r = await api(`/api/ingresos/${id}/recepcion`, "POST", { numero: $("#rNro").value.trim() }); await abrir(id); return r;
+  }, r => `Vinculado a la recepción ${esc(r.numero)}`));
+  $("#bRecibir").onclick = e => accion(e.target, async () => {
+    await guardarConts();
+    const r = await api(`/api/ingresos/${id}/recibir`, "POST"); await abrir(id); cargarBandeja();
+    if (!r.ok) throw new Error(`${r.recibidos} de ${r.total} recibidos. Revisá los que quedaron con error.`);
+    return r;
+  }, r => `${r.recibidos} contenedor(es) recibidos ✔`);
+  $("#bImpCar").onclick = e => accion(e.target, async () => {
+    // cada computadora imprime en sus impresoras: la página se carga oculta y abre el diálogo de impresión
+    const r = await fetch(`/api/ingresos/${id}/caratulas/imprimir.html`, { headers: { Authorization: "Bearer " + token } });
+    const t = await r.text();
+    if (!r.ok) { let m = "Error " + r.status; try { m = JSON.parse(t).error || m; } catch {} throw new Error(m); }
+    let fr = document.getElementById("frImp"); if (fr) fr.remove();
+    fr = document.createElement("iframe"); fr.id = "frImp"; fr.title = "Impresión";
+    fr.style.cssText = "position:fixed;right:0;bottom:0;width:1px;height:1px;border:0;opacity:0";
+    fr.srcdoc = t; document.body.appendChild(fr);
+    return {};
+  }, "Se abrió el diálogo de impresión de esta computadora");
+  $("#bImpCarSrv").onclick = e => accion(e.target, async () => { const r = await api(`/api/ingresos/${id}/caratulas/imprimir`, "POST"); if (!r.ok) throw new Error(r.mensaje); return r; }, "Carátulas enviadas a la impresora del servidor");
+  $("#bCerrar") && ($("#bCerrar").onclick = e => { if (confirm("¿Procesar el ingreso en el LES? Pasa a Pend. validar.")) accion(e.target, async () => { const r = await api(`/api/ingresos/${id}/cerrar`, "POST"); await abrir(id); cargarBandeja(); return r; }, "Ingreso procesado en el LES ✔"); });
+}
+
+// ------------------------------------------------------------ diagnóstico (solo lectura)
+$("#bDiag").onclick = () => {
+  modal(`<h2>Diagnóstico del módulo de ingreso</h2>
+    <p style="margin:0">SONA recorre el LES y el WMS <b>solo leyendo</b> (no graba, no confirma, no recibe nada) y junta en un zip:
+    la pantalla y los scripts de Ingresos pendientes del LES, los ingresos pendientes con su detalle, el menú del WMS, la recepción
+    por contenedor hasta la lista de proveedores, los artículos, la pantalla de alta de artículo (sin grabar), el rollo de etiquetas
+    y las órdenes del handheld. También van las capturas de las operaciones reales que se hicieron desde SONA.</p>
+    <p class="tenue" style="margin:0">Las claves no se guardan en el zip. Tarda 1 o 2 minutos.</p>
+    <div class="fila"><button class="btn pri" id="mDiagOk">Capturar</button><button class="btn" onclick="cerrarModal()">Cancelar</button></div>`);
+  $("#mDiagOk").onclick = e => accion(e.target, async () => {
+    const r = await fetch("/api/ingresos/diagnostico", { method: "POST", headers: { Authorization: "Bearer " + token } });
+    if (!r.ok) { const j = await r.json().catch(() => ({})); throw new Error(j.error || ("Error " + r.status)); }
+    const blob = await r.blob();
+    const nombre = (r.headers.get("Content-Disposition") || "").match(/filename="?([^";]+)/)?.[1] || "sona_capturas.zip";
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = nombre; a.click();
+    cerrarModal();
+    const copia = r.headers.get("X-Sona-Copia");
+    return copia ? decodeURIComponent(copia) : null;
+  }, copia => "Diagnóstico listo ✔" + (copia ? `<br><small>Copia en ${esc(copia)}</small>` : ""));
+};
+
+// ------------------------------------------------------------ tiempo real
+let ws = null, recarga = null;
+function conectar() {
+  try {
+    ws = new WebSocket((location.protocol === "https:" ? "wss://" : "ws://") + location.host + "/api/eventos?token=" + encodeURIComponent(token));
+    ws.onopen = () => { $("#vivo").classList.add("on"); $("#vivo span").textContent = "En vivo"; };
+    ws.onclose = () => { $("#vivo").classList.remove("on"); $("#vivo span").textContent = "Reconectando…"; if (token) setTimeout(conectar, 5000); };
+    ws.onmessage = m => {
+      let e = {}; try { e = JSON.parse(m.data); } catch {}
+      if (e.tipo === "ingreso" && e.usuario !== yo?.usuario) { clearTimeout(recarga); recarga = setTimeout(() => { cargarBandeja(); if (actual === e.id) abrir(actual); }, 1500); }
+    };
+  } catch {}
+}
+
+async function iniciar() {
+  $("#pantallaLogin").classList.add("oculto"); $("#app").classList.remove("oculto");
+  try { yo = await api("/api/yo"); } catch { return; }
+  $("#sub").textContent = (yo.nombre || yo.usuario) + " · " + ({ analista: "Analista", admin: "Administrador" }[yo.rol] || yo.rol);
+  const okIng = yo.rol === "admin" || (Array.isArray(yo.permisos) ? yo.permisos.includes("ingreso") : ["analista", "admin"].includes(yo.rol));
+  if (!okIng) { $("#lista").innerHTML = `<div class="error">Tu usuario no tiene permiso para el módulo de ingreso. Pedíselo a un administrador (ZUSR › Permisos).</div>`; return; }
+  conectar();
+  try { const l = await api("/api/yo/les"); mostrarLes(l); if (!l.cargado) { pedirLes(); return; } } catch {}
+  await cargarBandeja();
+  setInterval(() => { if (document.visibilityState === "visible") cargarBandeja(); }, 90000);
+}
+if (token) iniciar(); else $("#pantallaLogin").classList.remove("oculto");
+</script>
+</body>
+</html>

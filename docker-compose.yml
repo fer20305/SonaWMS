@@ -1,0 +1,16 @@
+services:
+  sona:
+    build: .
+    image: sona-deposito:latest
+    container_name: sona-deposito
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - TZ=America/Argentina/Buenos_Aires
+      # Las direcciones del WMS, LES y buscador se cargan desde el panel (Sistema › Configuración, ZCFG)
+      # y quedan en ./datos/config.json. Solo si hace falta forzarlas al arrancar:
+      # - SONA_WMS_LOCAL=http://<ip-del-wms>/sglwms_prod/
+      # - SONA_WMS_EXTERNO=http://<ip-externa>/sglwms_prod/
+    volumes:
+      - ./datos:/datos

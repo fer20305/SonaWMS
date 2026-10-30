@@ -1,0 +1,702 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0B2A42">
+<title>SONA Producción</title>
+<style>
+  :root {
+    --marino: #0B2A42; --marino2: #1C4C73; --naranja: #F47920; --naranja-claro: #FFE7D4;
+    --fondo: #EEF1F4; --panel: #FFFFFF; --linea: #D5DCE3; --texto: #1B2733; --tenue: #5D6B79;
+    --ok: #1E8E3E; --ok-claro: #E3F4E8; --aviso: #B7791F; --aviso-claro: #FFF5DB; --error: #C62828; --error-claro: #FDE7E7;
+    --info: #1565C0; --info-claro: #E3EEFB;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--fondo); color: var(--texto); font: 14px/1.45 "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif; }
+  button, input, select { font: inherit; }
+  .barra { background: var(--marino); color: #fff; padding: 10px 16px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 5; }
+  .barra .logo { width: 34px; height: 34px; border-radius: 8px; background: #fff1; display: grid; place-items: center; color: var(--naranja); font-weight: 900; font-size: 22px; }
+  .barra h1 { font-size: 17px; margin: 0; font-weight: 700; }
+  .barra .sub { font-size: 12px; opacity: .75; }
+  .barra .der { margin-left: auto; display: flex; align-items: center; gap: 10px; font-size: 12px; flex-wrap: wrap; justify-content: flex-end; }
+  .barra .btn { padding: 4px 10px; }
+  .vivo { display: inline-flex; align-items: center; gap: 6px; }
+  .vivo i { width: 8px; height: 8px; border-radius: 50%; background: #FF8A80; display: inline-block; }
+  .vivo.on i { background: #5BD17E; }
+  .franja { height: 3px; background: var(--naranja); }
+  main { padding: 12px 16px 40px; }
+  .kpis { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-bottom: 12px; }
+  .kpi { background: var(--panel); border: 1px solid var(--linea); border-radius: 12px; padding: 10px 12px; border-left: 4px solid var(--c, var(--marino2)); cursor: pointer; }
+  .kpi.act { box-shadow: 0 0 0 2px var(--c, var(--marino2)) inset; }
+  .kpi b { display: block; font-size: 26px; font-variant-numeric: tabular-nums; }
+  .kpi span { font-size: 12px; color: var(--tenue); }
+  .filtros { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; background: var(--panel); border-radius: 12px; padding: 10px 12px; margin-bottom: 12px; }
+  label.c { display: flex; flex-direction: column; font-size: 12px; color: var(--tenue); gap: 3px; }
+  input, select { border: 1px solid var(--linea); border-radius: 8px; padding: 7px 9px; background: #fff; color: var(--texto); min-width: 0; }
+  .btn { border: 1px solid var(--linea); background: #fff; color: var(--marino); border-radius: 8px; padding: 7px 14px; cursor: pointer; font-weight: 600; white-space: nowrap; }
+  .btn.pri { background: var(--naranja); border-color: var(--naranja); color: #fff; }
+  .btn.chico { padding: 3px 9px; font-size: 12.5px; }
+  .btn:disabled { opacity: .5; cursor: default; }
+  .btn:hover:not(:disabled) { filter: brightness(.96); }
+  .tabs { display: flex; gap: 4px; overflow-x: auto; }
+  .tabs button { border: 0; background: transparent; padding: 9px 14px; border-radius: 10px 10px 0 0; color: var(--tenue); cursor: pointer; white-space: nowrap; font-weight: 600; }
+  .tabs button.act { background: var(--panel); color: var(--marino); box-shadow: inset 0 3px 0 var(--naranja); }
+  .tabs button em { font-style: normal; background: #E3E8EE; border-radius: 99px; padding: 0 7px; margin-left: 6px; font-size: 12px; }
+  .tabs button.act em { background: var(--naranja-claro); color: #B4510A; }
+  .cuerpo { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 14px; align-items: start; }
+  .cuerpo.solo { grid-template-columns: minmax(0, 1fr); } .cuerpo.solo .lado { display: none; }
+  /* flujo de documentos (estilo SAP) */
+  .pasos { display: flex; gap: 0; margin: 10px 0 14px; overflow-x: auto; padding-bottom: 4px; }
+  .paso { flex: 1; min-width: 118px; position: relative; text-align: center; padding: 0 4px; }
+  .paso::before { content: ""; position: absolute; top: 15px; left: -50%; width: 100%; height: 3px; background: var(--c, var(--linea)); z-index: 0; }
+  .paso:first-child::before { display: none; }
+  .paso i { position: relative; z-index: 1; display: inline-flex; width: 32px; height: 32px; border-radius: 50%; align-items: center; justify-content: center; font-style: normal; font-weight: 800; color: #fff; background: var(--c, #B8C2CC); box-shadow: 0 0 0 4px var(--panel); }
+  .paso b { display: block; font-size: 12.5px; color: var(--marino); margin-top: 5px; }
+  .paso span { display: block; font-size: 11.5px; color: var(--tenue); }
+  .arbol { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  .arbol th { text-align: left; font-size: 12px; color: var(--tenue); font-weight: 700; padding: 6px 8px; border-bottom: 2px solid var(--linea); background: #F6F8FA; position: sticky; top: 0; }
+  .arbol td { padding: 6px 8px; border-bottom: 1px solid #EDF0F3; vertical-align: top; }
+  .arbol tr.nodo:hover td { background: #F7FAFD; }
+  .arbol tr.nodo { cursor: pointer; }
+  .arbol tr.raiz td { background: #F1F5F9; font-weight: 700; }
+  .arbol tr.sel td { background: var(--naranja-claro) !important; }
+  .arbol .doc { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+  .arbol .sangria { display: inline-block; flex: none; }
+  .arbol .tog { width: 18px; height: 18px; flex: none; border: 1px solid var(--linea); border-radius: 4px; background: #fff; font-size: 11px; line-height: 15px; text-align: center; color: var(--marino); cursor: pointer; padding: 0; }
+  .arbol .tog.nada { visibility: hidden; }
+  .arbol .ico { width: 10px; height: 10px; border-radius: 50%; flex: none; background: #B8C2CC; }
+  .arbol .ico.e-ok { background: var(--ok); } .arbol .ico.e-curso { background: var(--info); } .arbol .ico.e-aviso { background: var(--aviso); } .arbol .ico.e-error { background: var(--error); }
+  .arbol tr.datos td { background: #FBFCFD; padding: 4px 8px 10px; }
+  .kv { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 4px 16px; font-size: 12.5px; }
+  .kv div span { color: var(--tenue); } .kv div b { font-weight: 600; word-break: break-word; }
+  @media print { .barra, .filtros, .tabs, #kpis, .fBusca, .noimp { display: none !important; } .hoja { min-height: 0; padding: 0; } }
+  .hoja { background: var(--panel); border-radius: 0 12px 12px 12px; padding: 12px; min-height: 55vh; min-width: 0; }
+  .lado { background: var(--panel); border-radius: 12px; padding: 14px; position: sticky; top: 66px; max-height: calc(100vh - 80px); overflow: auto; }
+  .lado h2 { margin: 0 0 8px; }
+  @media (max-width: 1000px) { .cuerpo { grid-template-columns: minmax(0, 1fr); } .lado { position: static; max-height: none; } main { padding: 10px 8px 30px; } .barra .sub { display: none; } }
+  .tabla { overflow-x: auto; border: 1px solid var(--linea); border-radius: 10px; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; }
+  th { background: #E9EEF3; color: var(--marino); text-align: left; font-weight: 600; padding: 7px 9px; white-space: nowrap; cursor: pointer; user-select: none; position: sticky; top: 0; }
+  td { padding: 6px 9px; border-top: 1px solid #EDF0F3; vertical-align: middle; }
+  td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; }
+  td.nw { white-space: nowrap; }
+  tr.clic { cursor: pointer; }
+  tr.clic:hover td { background: #FFF6EE; }
+  tr.sel td { background: var(--naranja-claro) !important; }
+  .mono { font-family: Consolas, "Cascadia Mono", monospace; }
+  .op { font-family: Consolas, "Cascadia Mono", monospace; font-weight: 700; color: var(--marino); }
+  .chip { display: inline-block; padding: 1px 9px; border-radius: 99px; font-size: 11.5px; font-weight: 700; background: #EEF0F2; color: var(--tenue); white-space: nowrap; }
+  .chip.ok { background: var(--ok-claro); color: var(--ok); } .chip.err { background: var(--error-claro); color: var(--error); }
+  .chip.av { background: var(--aviso-claro); color: var(--aviso); } .chip.inf { background: var(--info-claro); color: var(--info); }
+  .chip.nar { background: var(--naranja-claro); color: #B4510A; }
+  .barrita { width: 90px; height: 8px; background: #E6EAEE; border-radius: 99px; overflow: hidden; display: inline-block; vertical-align: middle; margin-right: 6px; }
+  .barrita s { display: block; height: 100%; background: var(--ok); text-decoration: none; }
+  h2 { font-size: 15px; color: var(--marino); margin: 14px 0 6px; }
+  .tenue { color: var(--tenue); }
+  .vacio { color: var(--tenue); padding: 24px; text-align: center; }
+  .error { background: var(--error-claro); color: var(--error); padding: 10px 12px; border-radius: 8px; font-weight: 600; margin: 8px 0; }
+  .aviso { background: var(--aviso-claro); color: #7A4F0E; padding: 8px 12px; border-radius: 8px; margin: 8px 0; }
+  .okbox { background: var(--ok-claro); color: #145C29; padding: 10px 12px; border-radius: 8px; margin: 8px 0; font-weight: 600; }
+  .pickers { display: flex; flex-direction: column; gap: 6px; margin: 8px 0; max-height: 46vh; overflow: auto; }
+  .pk { display: flex; align-items: center; gap: 8px; border: 1px solid var(--linea); border-radius: 10px; padding: 7px 10px; cursor: pointer; background: #fff; text-align: left; }
+  .pk:hover { border-color: var(--naranja); }
+  .pk.sel { border-color: var(--naranja); background: var(--naranja-claro); box-shadow: 0 0 0 1px var(--naranja) inset; }
+  .pk b { flex: 1; font-size: 13.5px; }
+  .pk small { color: var(--tenue); }
+  .ficha { border: 1px solid var(--linea); border-radius: 10px; padding: 9px 11px; margin-bottom: 8px; }
+  .ficha .t { font-weight: 700; color: var(--marino); }
+  .modal { position: fixed; inset: 0; background: #0B2A4266; display: grid; place-items: center; z-index: 20; padding: 12px; }
+  .modal > div { background: var(--panel); border-radius: 14px; padding: 18px; width: min(520px, 100%); max-height: 90vh; overflow: auto; display: flex; flex-direction: column; gap: 10px; }
+  .modal h2 { margin: 0; }
+  .login { max-width: 360px; margin: 10vh auto; background: var(--panel); border-radius: 14px; padding: 24px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 6px 30px #0B2A4214; }
+  .login h1 { margin: 0; color: var(--marino); font-size: 22px; }
+  .login p { margin: 0; color: var(--tenue); }
+  .fila { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .oculto { display: none !important; }
+  .seg { display: flex; gap: 4px; flex-wrap: wrap; margin: 4px 0 8px; }
+  .seg button { flex: 1; border: 1px solid var(--linea); background: #fff; border-radius: 8px; padding: 7px 6px; cursor: pointer; font-weight: 600; color: var(--tenue); white-space: nowrap; }
+  .seg button.act { border-color: var(--c); background: var(--c); color: #fff; }
+  .toast { position: fixed; right: 16px; bottom: 16px; max-width: 420px; z-index: 30; }
+</style>
+</head>
+<body>
+<div id="pantallaLogin" class="login oculto">
+  <h1>SONA <span style="color:var(--naranja)">Producción</span></h1>
+  <p>Ingresá con tu usuario y clave del WMS.</p>
+  <label class="c">Usuario<input id="lUsuario" autocomplete="username" autocapitalize="characters"></label>
+  <label class="c">Clave<input id="lClave" type="password" autocomplete="current-password"></label>
+  <div id="lError" class="error oculto"></div>
+  <button class="btn pri" id="lEntrar">Ingresar</button>
+  <p style="font-size:12px">Para ver hace falta el permiso "Panel de producción: ver" y para asignar "Panel de producción: asignar pedidos" (se dan en ZUSR › Permisos).</p>
+</div>
+
+<div id="app" class="oculto">
+  <div class="barra">
+    <div class="logo">S</div>
+    <div><h1>SONA Producción</h1><div class="sub" id="sub"></div></div>
+    <div class="der">
+      <span id="wmsHora" class="tenue" style="color:#fffb"></span>
+      <span class="vivo" id="vivo"><i></i><span>Conectando…</span></span>
+      <button class="btn" id="bRefrescar" title="Volver a leer el WMS">⟳ Actualizar</button>
+      <button class="btn" id="bConfig" title="Impresora y usuario del WMS">⚙</button>
+      <button class="btn" id="salir">Salir</button>
+    </div>
+  </div>
+  <div class="franja"></div>
+  <main>
+    <div class="kpis" id="kpis"></div>
+    <div class="filtros">
+      <label class="c">Viaje<select id="fViaje"><option value="">Todos</option></select></label>
+      <label class="c">Empresa<select id="fEmpresa"><option value="">Todas</option></select></label>
+      <label class="c">Picker<select id="fPicker"><option value="">Todos</option></select></label>
+      <label class="c">Buscar<input id="fTexto" placeholder="OP, solicitud, destino…" style="width:220px"></label>
+      <button class="btn" id="fLimpiar">Limpiar filtros</button>
+      <span id="errWms" class="tenue"></span>
+    </div>
+    <div class="tabs" id="tabs">
+      <button data-t="asignar" class="act">Para asignar<em id="nAsignar">0</em></button>
+      <button data-t="asignadas">Asignadas · sin empezar<em id="nAsignadas">0</em></button>
+      <button data-t="curso">En preparación<em id="nCurso">0</em></button>
+      <button data-t="standby">Stand by por faltante<em id="nStandby">0</em></button>
+      <button data-t="pickers">Pickers</button>
+      <button data-t="historial">Historial</button>
+      <button data-t="flujo">🔗 Flujo de documentos</button>
+    </div>
+    <div class="cuerpo">
+      <div class="hoja" id="hoja"><div class="vacio">Cargando…</div></div>
+      <aside class="lado" id="lado"></aside>
+    </div>
+  </main>
+</div>
+
+<div id="modal" class="modal oculto"><div id="modalCuerpo"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const num = (v, d = 0) => v == null || v === "" ? "" : Number(v).toLocaleString("es-AR", { maximumFractionDigits: d });
+const hora = iso => { if (!iso) return ""; const d = new Date(iso); return d.toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit" }) + " " + d.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" }); };
+const hoyStr = (dd = 0) => { const d = new Date(); d.setDate(d.getDate() - dd); return d.toLocaleDateString("sv-SE"); };
+const clave = o => o.empresa + "|" + o.tipo + "|" + o.op;
+// prioridad de preparación (el número que va al WMS lo decide el servidor según cómo ordena el WMS)
+const PRIO = [{ v: "urgente", t: "Urgente", c: "#C62828" }, { v: "alta", t: "Alta", c: "#F47920" }, { v: "normal", t: "Normal", c: "#5D6B79" }, { v: "baja", t: "Baja", c: "#1565C0" }];
+const prioChip = n => { const p = PRIO.find(x => x.v === n); return !p || n === "normal" ? `<span class="chip">normal</span>` : `<span class="chip" style="background:${p.c};color:#fff">${p.t.toLowerCase()}</span>`; };
+const segPrio = (id, act) => `<div class="seg" id="${id}">${PRIO.map(p => `<button data-p="${p.v}" style="--c:${p.c}" class="${p.v === act ? "act" : ""}">${p.t}</button>`).join("")}</div>`;
+let prioElegida = "normal";
+// impresión: por defecto cada computadora imprime en SUS impresoras (diálogo del navegador); "servidor" = impresora de la PC del servidor
+const imprimirEn = () => { try { return localStorage.getItem("sona_imprimir_en") || "pc"; } catch { return "pc"; } };
+const enPc = () => imprimirEn() === "pc";
+async function imprimirAca(url) {
+  // se arma la página de impresión y se carga en un marco oculto que abre el diálogo de impresión de esta PC
+  try {
+    const r = await fetch(url, { headers: { Authorization: "Bearer " + token } });
+    const t = await r.text();
+    if (!r.ok) { let m = "Error " + r.status; try { m = JSON.parse(t).error || m; } catch {} throw new Error(m); }
+    let f = document.getElementById("frImp"); if (f) f.remove();
+    f = document.createElement("iframe"); f.id = "frImp"; f.title = "Impresión";
+    f.style.cssText = "position:fixed;right:0;bottom:0;width:1px;height:1px;border:0;opacity:0";
+    f.srcdoc = t; document.body.appendChild(f);
+  } catch (e) { toast("🖨 No se pudo preparar la impresión: " + esc(e.message), "error"); }
+}
+const urlImprimir = ops => `/api/produccion/caratulas/imprimir.html?ops=${encodeURIComponent(ops.map(o => `${o.empresa}|${o.tipo}|${o.op}`).join(","))}`;
+
+// ------------------------------------------------------------ sesión y API
+let token = null; try { token = localStorage.getItem("sona_prod_token"); } catch {}
+let yo = null;
+const tiene = (p) => !!yo && (yo.rol === "admin" || (Array.isArray(yo.permisos) ? yo.permisos.includes(p) : null));
+const puedeAsignar = () => { const t = tiene("produccion_asignar"); return t === null ? ["produccion", "analista", "admin"].includes(yo.rol) : t; };
+async function api(ruta, metodo = "GET", cuerpo) {
+  const r = await fetch(ruta, { method: metodo, headers: { Authorization: "Bearer " + token, ...(cuerpo ? { "Content-Type": "application/json" } : {}) }, body: cuerpo ? JSON.stringify(cuerpo) : undefined });
+  const j = await r.json().catch(() => ({}));
+  if (r.status === 401) { salir(); throw new Error(j.error || "Sesión vencida"); }
+  if (!r.ok) throw new Error(j.error || ("Error " + r.status));
+  return j;
+}
+async function entrar() {
+  const u = $("#lUsuario").value.trim(), c = $("#lClave").value;
+  if (!u || !c) return;
+  $("#lEntrar").disabled = true; $("#lError").classList.add("oculto");
+  try {
+    const r = await fetch("/api/login", { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ usuario: u, clave: c, web: true, dispositivo: "WEB-PROD-" + u.toUpperCase(), modelo: navigator.userAgent.slice(0, 60), version: "web" }) });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(j.error || "No se pudo ingresar");
+    token = j.token; try { localStorage.setItem("sona_prod_token", token); } catch {}
+    iniciar();
+  } catch (e) { $("#lError").textContent = e.message; $("#lError").classList.remove("oculto"); }
+  finally { $("#lEntrar").disabled = false; }
+}
+function salir() { token = null; try { localStorage.removeItem("sona_prod_token"); } catch {} if (ws) try { ws.close(); } catch {} $("#app").classList.add("oculto"); $("#pantallaLogin").classList.remove("oculto"); }
+$("#lEntrar").onclick = entrar;
+$("#lClave").onkeydown = e => { if (e.key === "Enter") entrar(); };
+$("#salir").onclick = salir;
+
+function toast(html, tipo = "okbox", ms = 6000) {
+  const d = document.createElement("div"); d.className = tipo; d.style.boxShadow = "0 6px 24px #0B2A4230"; d.innerHTML = html;
+  $("#toast").appendChild(d); setTimeout(() => d.remove(), ms);
+}
+
+// ------------------------------------------------------------ tiempo real
+let ws = null, recarga = null;
+function conectar() {
+  try {
+    ws = new WebSocket((location.protocol === "https:" ? "wss://" : "ws://") + location.host + "/api/eventos?token=" + encodeURIComponent(token));
+    ws.onopen = () => { $("#vivo").classList.add("on"); $("#vivo span").textContent = "En vivo"; };
+    ws.onclose = () => { $("#vivo").classList.remove("on"); $("#vivo span").textContent = "Reconectando…"; if (token) setTimeout(conectar, 5000); };
+    ws.onmessage = m => {
+      let e = {}; try { e = JSON.parse(m.data); } catch {}
+      if (e.tipo === "faltante" && !e.estado) toast(`⚠ <b>Faltante</b> en la OP ${esc(e.op)} · ${esc(e.articulo)} ${esc(e.descripcion || "")} (${esc(e.usuario)})`, "aviso", 12000);
+      if (["produccion", "faltante", "picking"].includes(e.tipo)) { clearTimeout(recarga); recarga = setTimeout(() => cargar(false), e.tipo === "picking" ? 8000 : 1500); }
+    };
+  } catch {}
+}
+
+// ------------------------------------------------------------ datos
+let T = null;              // último tablero
+let pestana = "asignar";
+let elegidas = new Set();  // OPs tildadas para asignar (clave)
+let pickerElegido = null;
+let detalle = null;        // OP elegida en asignadas / en curso / stand by
+let cargando = false;
+
+async function cargar(forzar) {
+  if (cargando) return; cargando = true;
+  if (forzar) $("#bRefrescar").disabled = true;
+  try {
+    T = await api("/api/produccion/tablero" + (forzar ? "?refrescar=1" : ""));
+    $("#wmsHora").textContent = "WMS " + new Date(T.actualizado).toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit", second: "2-digit" }) + " · " + T.usuarioWms;
+    $("#errWms").innerHTML = T.error ? `<span class="chip err">${esc(T.error)}</span>` : "";
+    llenarFiltros();
+    // las tildadas que ya no están para asignar se sueltan
+    const vigentes = new Set(T.aAsignar.map(clave));
+    elegidas = new Set([...elegidas].filter(k => vigentes.has(k)));
+    pintar();
+  } catch (e) {
+    $("#hoja").innerHTML = `<div class="error">${esc(e.message)}</div>`;
+  } finally { cargando = false; $("#bRefrescar").disabled = false; }
+}
+
+function llenarFiltros() {
+  const set = (sel, vals, fmt) => {
+    const el = $(sel), act = el.value;
+    el.innerHTML = el.options[0].outerHTML + vals.map(v => `<option value="${esc(v)}">${esc(fmt ? fmt(v) : v)}</option>`).join("");
+    if (vals.includes(act)) el.value = act;
+  };
+  set("#fViaje", T.viajes || []);
+  set("#fEmpresa", [...new Set([...T.aAsignar, ...T.preparacion].map(o => o.empresaNombre).filter(Boolean))].sort());
+  const nombres = Object.fromEntries((T.pickers || []).map(p => [p.codigo, p.nombre]));
+  set("#fPicker", [...new Set(T.preparacion.map(o => o.picker).filter(Boolean))].sort(), c => nombres[c] || c);
+}
+
+function filtrar(lista) {
+  const v = $("#fViaje").value, e = $("#fEmpresa").value, p = $("#fPicker").value, t = $("#fTexto").value.trim().toLowerCase();
+  return lista.filter(o => (!v || o.viaje === v) && (!e || o.empresaNombre === e) && (!p || o.picker === p) &&
+    (!t || [o.op, o.solicitud, o.destino, o.empresaNombre, o.pickerNombre, o.viaje].some(x => String(x || "").toLowerCase().includes(t))));
+}
+["#fViaje", "#fEmpresa", "#fPicker"].forEach(s => $(s).onchange = () => pintar());
+$("#fTexto").oninput = () => pintar();
+$("#fLimpiar").onclick = () => { ["#fViaje", "#fEmpresa", "#fPicker", "#fTexto"].forEach(s => $(s).value = ""); pintar(); };
+$("#bRefrescar").onclick = () => cargar(true);
+
+const enStandby = o => (o.faltantes && o.faltantes.length) || o.postergada;
+function grupos() {
+  const asignadas = T.preparacion.filter(o => !o.comenzada && !enStandby(o));
+  const curso = T.preparacion.filter(o => o.comenzada && !enStandby(o));
+  const standby = T.preparacion.filter(enStandby).concat(T.aAsignar.filter(enStandby));
+  return { asignar: T.aAsignar, asignadas, curso, standby };
+}
+
+// ------------------------------------------------------------ pintar
+document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => irA(b.dataset.t));
+function irA(t) {
+  pestana = t; detalle = null;
+  document.querySelectorAll("#tabs button").forEach(x => x.classList.toggle("act", x.dataset.t === t));
+  pintar();
+}
+
+function kpi(t, v, color, pest) { return `<div class="kpi ${pest === pestana ? "act" : ""}" style="--c:${color}" data-p="${pest}"><b>${v}</b><span>${esc(t)}</span></div>`; }
+function pintar() {
+  $(".cuerpo").classList.toggle("solo", pestana === "flujo");
+  if (!T) { if (pestana === "flujo") pintarFlujo(); return; }
+  const g = grupos();
+  const activos = (T.pickers || []).filter(p => p.ops > 0).length;
+  $("#kpis").innerHTML = kpi("Para asignar", g.asignar.length, "var(--naranja)", "asignar") + kpi("Asignadas sin empezar", g.asignadas.length, "var(--info)", "asignadas")
+    + kpi("En preparación", g.curso.length, "var(--ok)", "curso") + kpi("Stand by por faltante", g.standby.length + T.standby.length, "var(--error)", "standby")
+    + kpi("Pickers con OPs", activos, "var(--marino2)", "pickers");
+  document.querySelectorAll(".kpi").forEach(k => k.onclick = () => irA(k.dataset.p));
+  $("#nAsignar").textContent = g.asignar.length; $("#nAsignadas").textContent = g.asignadas.length;
+  $("#nCurso").textContent = g.curso.length; $("#nStandby").textContent = g.standby.length + T.standby.length;
+  ({ asignar: pintarAsignar, asignadas: () => pintarPrep(g.asignadas, "asignadas"), curso: () => pintarPrep(g.curso, "curso"),
+     standby: () => pintarStandby(g.standby), pickers: pintarPickers, historial: pintarHistorial, flujo: () => { if (!$("#flQ")) pintarFlujo(); } })[pestana]();
+}
+
+function chipDisp(o) { return o.noDisponible ? `<span class="chip err" title="El WMS marca no disponible">${esc(o.noDisponible)}</span>` : ""; }
+function avance(o) {
+  const a = o.avance ?? 0;
+  return `<span class="barrita"><s style="width:${Math.min(100, a)}%"></s></span><b>${a}%</b>`;
+}
+
+function pintarAsignar() {
+  const l = filtrar(T.aAsignar);
+  if (!l.length) { $("#hoja").innerHTML = `<div class="vacio">No hay pedidos para asignar${T.aAsignar.length ? " con estos filtros" : ""}.</div>`; pintarLado(); return; }
+  const todas = l.every(o => elegidas.has(clave(o)));
+  $("#hoja").innerHTML = `<div class="fila" style="margin-bottom:8px"><span class="tenue">Tildá uno o varios pedidos y elegí el picker al costado.</span></div>
+    <div class="tabla"><table><thead><tr><th><input type="checkbox" id="todas" ${todas ? "checked" : ""}></th><th>OP</th><th>Fecha</th><th>Empresa</th><th>Solicitud</th>
+    <th>Destino</th><th>Viaje</th><th class="n">Art.</th><th class="n">Unid.</th><th class="n">m³</th><th></th></tr></thead><tbody>
+    ${l.map(o => { const k = clave(o); return `<tr class="clic ${elegidas.has(k) ? "sel" : ""}" data-k="${esc(k)}">
+      <td><input type="checkbox" ${elegidas.has(k) ? "checked" : ""}></td><td class="op nw">${esc(o.op)} <span class="tenue" style="font-weight:400">${esc(o.tipo)}</span></td>
+      <td class="nw">${esc(o.fecha || "")}</td><td>${esc(o.empresaNombre)}</td><td class="mono nw">${esc(o.solicitud || "")}</td><td>${esc(o.lugar || o.destino)}</td>
+      <td class="nw">${o.viaje ? `<span class="chip inf">${esc(o.viaje)}</span>` : ""}</td><td class="n">${num(o.articulos)}</td><td class="n">${num(o.unidades)}</td><td class="n">${num(o.m3, 3)}</td>
+      <td class="nw">${chipDisp(o)} ${enStandby(o) ? `<span class="chip err">faltante</span>` : ""}</td></tr>`; }).join("")}</tbody></table></div>`;
+  $("#todas").onclick = ev => { ev.stopPropagation(); l.forEach(o => ev.target.checked ? elegidas.add(clave(o)) : elegidas.delete(clave(o))); pintar(); };
+  document.querySelectorAll("#hoja tbody tr").forEach(tr => tr.onclick = () => { const k = tr.dataset.k; elegidas.has(k) ? elegidas.delete(k) : elegidas.add(k); pintar(); });
+  pintarLado();
+}
+
+function listaPickers(actual) {
+  const pk = T.pickers || [];
+  const q = ($("#qPicker")?.value || "").toLowerCase();
+  return pk.filter(p => !q || p.nombre.toLowerCase().includes(q) || p.codigo.toLowerCase().includes(q))
+    .filter(p => q || p.esPicker || p.ops > 0 || p.codigo === actual)
+    .map(p => `<button class="pk ${pickerElegido === p.codigo ? "sel" : ""}" data-c="${esc(p.codigo)}"><b>${esc(p.nombre)}</b>
+      <small class="mono">${esc(p.codigo)}</small>${p.ops ? `<span class="chip ${p.enCurso ? "ok" : "inf"}" title="OPs asignadas pendientes · en curso">${p.ops} OP${p.ops > 1 ? "s" : ""}${p.enCurso ? " · " + p.enCurso + " en curso" : ""}</span>` : `<span class="chip">libre</span>`}</button>`).join("")
+    || `<div class="tenue">No hay pickers${q ? " con ese nombre" : " marcados con rol Picker en SONA: escribí para buscar en todos los usuarios del WMS"}.</div>`;
+}
+function enganchar(alElegir) {
+  document.querySelectorAll(".pk").forEach(b => b.onclick = () => { pickerElegido = b.dataset.c; alElegir(); });
+  const q = $("#qPicker"); if (q) q.oninput = () => { $("#lstPickers").innerHTML = listaPickers(); enganchar(alElegir); };
+}
+
+function pintarLado() {
+  const lado = $("#lado");
+  if (pestana === "asignar") {
+    const ops = T.aAsignar.filter(o => elegidas.has(clave(o)));
+    if (!ops.length) { lado.innerHTML = `<h2>Asignar</h2><div class="vacio" style="padding:12px">Elegí uno o más pedidos de la lista.</div>`; return; }
+    const pk = (T.pickers || []).find(p => p.codigo === pickerElegido);
+    lado.innerHTML = `<h2>Asignar ${ops.length} pedido${ops.length > 1 ? "s" : ""}</h2>
+      ${ops.slice(0, 6).map(o => `<div class="ficha"><div class="t">OP ${esc(o.op)} · ${esc(o.empresaNombre)}</div><div class="tenue">${esc(o.solicitud || "")} ${esc(o.lugar || o.destino)}</div>
+        <div>${num(o.articulos)} art. · ${num(o.unidades)} unid. ${o.viaje ? `· viaje <b>${esc(o.viaje)}</b>` : ""}</div></div>`).join("")}
+      ${ops.length > 6 ? `<div class="tenue">y ${ops.length - 6} más…</div>` : ""}
+      <h2>Picker</h2><input id="qPicker" placeholder="Buscar picker…" style="width:100%">
+      <div class="pickers" id="lstPickers">${listaPickers()}</div>
+      <h2>Prioridad</h2>${segPrio("segPrio", prioElegida)}
+      <label class="fila"><input type="checkbox" id="chkImprimir" ${T.imprimirAlAsignar ? "checked" : ""}> Imprimir la carátula ${enPc() ? "en <b>esta computadora</b>" : T.impresora ? `en <b>${esc(T.impresora)}</b> (servidor)` : "en el servidor"}</label>
+      ${puedeAsignar() ? `<button class="btn pri" id="bAsignar" style="width:100%;padding:11px" ${pk ? "" : "disabled"}>${pk ? `Asignar a ${esc(pk.nombre)}` : "Elegí el picker"}</button>`
+        : `<div class="aviso">Tu usuario solo puede mirar.</div>`}
+      <p class="tenue" style="font-size:12px">SONA hace los pasos del WMS: Sim de Faltantes (guarda el PDF) → Confirmación SIN Depuración → imprime la carátula con el picker.</p>
+      <div id="resAsignar"></div>`;
+    enganchar(pintarLado);
+    document.querySelectorAll("#segPrio button").forEach(x => x.onclick = () => { prioElegida = x.dataset.p; document.querySelectorAll("#segPrio button").forEach(y => y.classList.toggle("act", y === x)); });
+    const b = $("#bAsignar"); if (b) b.onclick = () => asignar(ops, pk);
+    return;
+  }
+  if (["asignadas", "curso", "standby"].includes(pestana) && detalle) { pintarDetalle(); return; }
+  lado.innerHTML = pestana === "historial" || pestana === "pickers" ? `<h2>Ayuda</h2><p class="tenue">Las carátulas quedan guardadas en la PC del servidor (carpeta de datos de SONA › caratulas) y se pueden reimprimir cuando quieras.</p>`
+    : `<h2>Detalle</h2><div class="vacio" style="padding:12px">Tocá una OP para ver la carátula, reimprimirla o cambiar el picker.</div>`;
+}
+
+async function asignar(ops, pk) {
+  const b = $("#bAsignar"), res = $("#resAsignar");
+  b.disabled = true;
+  const imprimir = $("#chkImprimir").checked, aca = imprimir && enPc(), aImprimir = [];
+  let ok = 0;
+  res.innerHTML = "";
+  for (const o of ops) {
+    b.textContent = `Asignando OP ${o.op}… (${ok + 1}/${ops.length})`;
+    try {
+      const r = await api("/api/produccion/asignar", "POST", { empresa: o.empresa, tipo: o.tipo, op: o.op, picker: pk.codigo, imprimir: imprimir && !aca, prioridad: prioElegida });
+      if (r.ok) { ok++; if (aca && r.caratula) aImprimir.push(o); }
+      const falt = (r.conFaltante || []).length ? `<div>⚠ Con faltante: ${r.conFaltante.map(x => `${esc(x.articulo)} (falta ${num(x.faltante)})`).join(", ")}</div>` : "";
+      const imp = !imprimir ? "" : aca ? (r.caratula ? " · carátula a la impresora de esta PC" : "") : r.impresa ? " · carátula impresa" : `<div>🖨 No se imprimió: ${esc(r.errorImpresion || "")}</div>`;
+      res.insertAdjacentHTML("beforeend", `<div class="${r.ok ? "okbox" : "error"}">${esc(r.mensaje)}${imp}${falt}
+        ${r.caratula ? `<div><a href="${urlCaratula(o)}" target="_blank">Ver carátula</a></div>` : ""}</div>`);
+      elegidas.delete(clave(o));
+    } catch (e) { res.insertAdjacentHTML("beforeend", `<div class="error">OP ${esc(o.op)}: ${esc(e.message)}</div>`); }
+  }
+  if (aImprimir.length) imprimirAca(urlImprimir(aImprimir));   // un solo diálogo para todas las carátulas
+  toast(`${ok} de ${ops.length} pedido(s) asignado(s) a <b>${esc(pk.nombre)}</b>${prioElegida !== "normal" ? " con prioridad " + prioElegida : ""}.`, ok === ops.length ? "okbox" : "aviso");
+  prioElegida = "normal";
+  await cargar(true);
+  const r2 = $("#resAsignar"); if (r2 && res.innerHTML) r2.innerHTML = res.innerHTML;
+}
+const urlCaratula = (o, orig) => `/api/produccion/caratula?empresa=${o.empresa}&tipo=${encodeURIComponent(o.tipo)}&op=${encodeURIComponent(o.op)}${orig ? "&original=1" : ""}&token=${encodeURIComponent(token)}`;
+
+function pintarPrep(lista, cual) {
+  const l = filtrar(lista);
+  if (!l.length) { $("#hoja").innerHTML = `<div class="vacio">No hay OPs ${cual === "curso" ? "en preparación" : "asignadas sin empezar"}${lista.length ? " con estos filtros" : ""}.</div>`; pintarLado(); return; }
+  $("#hoja").innerHTML = `<div class="tabla"><table><thead><tr><th>OP</th><th>Fecha</th><th>Empresa</th><th>Solicitud</th><th>Destino</th><th>Viaje</th>
+    <th>Picker</th><th>Prioridad</th><th>Avance</th><th class="n">Art.</th><th class="n">Unid.</th><th>Carátula</th></tr></thead><tbody>
+    ${l.map(o => `<tr class="clic ${detalle && clave(detalle) === clave(o) ? "sel" : ""}" data-k="${esc(clave(o))}">
+      <td class="op nw">${esc(o.op)} <span class="tenue" style="font-weight:400">${esc(o.tipo)}</span></td><td class="nw">${esc(o.fecha || "")}</td><td>${esc(o.empresaNombre)}</td>
+      <td class="mono nw">${esc(o.solicitud || "")}</td><td>${esc(o.lugar || o.destino)}</td><td class="nw">${o.viaje ? `<span class="chip inf">${esc(o.viaje)}</span>` : ""}</td>
+      <td class="nw">${o.picker ? `<b>${esc(o.pickerNombre || o.picker)}</b>` : `<span class="chip av">sin picker</span>`}</td>
+      <td class="nw" title="Prioridad en el WMS: ${esc(o.prioridad ?? "")}">${prioChip(o.prioridadNivel)}</td>
+      <td class="nw">${avance(o)}</td><td class="n">${num(o.articulos)}</td><td class="n">${num(o.unidades)}</td>
+      <td class="nw">${o.caratula ? `<span class="chip ok" title="Guardada ${esc(hora(o.caratulaHora))}">guardada${o.impresiones ? " · " + o.impresiones + "🖨" : ""}</span>` : `<span class="chip">WMS</span>`}</td></tr>`).join("")}
+    </tbody></table></div>`;
+  document.querySelectorAll("#hoja tbody tr").forEach(tr => tr.onclick = () => { detalle = l.find(o => clave(o) === tr.dataset.k); pickerElegido = null; pintar(); });
+  pintarLado();
+}
+
+function pintarStandby(lista) {
+  const l = filtrar(lista);
+  const sueltas = T.standby || [];
+  if (!l.length && !sueltas.length) { $("#hoja").innerHTML = `<div class="vacio">No hay OPs en stand by. 👌</div>`; pintarLado(); return; }
+  const filaF = f => `<div>• <b class="mono">${esc(f.articulo || "")}</b> ${esc(f.descripcion || "")} ${f.cantidad != null ? "· pide " + num(f.cantidad, 2) : ""} <span class="tenue">(${esc(f.usuario)} ${esc(hora(f.hora))})</span>
+    ${f.comentario ? `<div class="tenue" style="margin-left:14px">“${esc(f.comentario)}”</div>` : ""}</div>`;
+  $("#hoja").innerHTML = (l.length ? `<div class="tabla"><table><thead><tr><th>OP</th><th>Empresa</th><th>Destino</th><th>Viaje</th><th>Picker</th><th>Avance</th><th>Motivo</th></tr></thead><tbody>
+    ${l.map(o => `<tr class="clic ${detalle && clave(detalle) === clave(o) ? "sel" : ""}" data-k="${esc(clave(o))}"><td class="op nw">${esc(o.op)}</td><td>${esc(o.empresaNombre)}</td>
+      <td>${esc(o.lugar || o.destino)}</td><td class="nw">${o.viaje ? `<span class="chip inf">${esc(o.viaje)}</span>` : ""}</td><td class="nw">${esc(o.pickerNombre || o.picker || "")}</td>
+      <td class="nw">${o.asignada ? avance(o) : `<span class="chip nar">sin asignar</span>`}</td>
+      <td>${(o.faltantes || []).map(filaF).join("")}${o.postergada ? `<div><span class="chip av">postergada</span> por ${esc(o.postergada.usuario)} ${esc(hora(o.postergada.hora))} <span class="tenue">${esc(o.postergada.detalle || "")}</span></div>` : ""}</td></tr>`).join("")}
+    </tbody></table></div>` : "")
+    + (sueltas.length ? `<h2>Faltantes de OPs que ya no están en las bandejas del WMS</h2><div class="tabla"><table><thead><tr><th>OP</th><th>Empresa</th><th>Motivo</th></tr></thead><tbody>
+      ${sueltas.map(o => `<tr><td class="op">${esc(o.op)}</td><td>${esc(o.empresaNombre || "")}</td><td>${(o.faltantes || []).map(filaF).join("")}${o.postergada ? `<span class="chip av">postergada</span> por ${esc(o.postergada.usuario)}` : ""}</td></tr>`).join("")}
+      </tbody></table></div>` : "");
+  document.querySelectorAll("#hoja tbody tr[data-k]").forEach(tr => tr.onclick = () => { detalle = l.find(o => clave(o) === tr.dataset.k); pickerElegido = null; pintar(); });
+  pintarLado();
+}
+
+function pintarDetalle() {
+  // buscar la versión actual de la OP
+  const o = [...T.preparacion, ...T.aAsignar].find(x => clave(x) === clave(detalle)) || detalle;
+  const lado = $("#lado");
+  const pk = (T.pickers || []).find(p => p.codigo === pickerElegido);
+  lado.innerHTML = `<h2>OP ${esc(o.op)} <span class="tenue" style="font-weight:400">${esc(o.tipo)}</span></h2>
+    <div class="ficha"><div class="t">${esc(o.empresaNombre)}</div><div>${esc(o.solicitud || "")} ${esc(o.lugar || o.destino)}</div>
+      <div class="tenue">${num(o.articulos)} art. · ${num(o.unidades)} unid. ${o.viaje ? "· viaje " + esc(o.viaje) : ""}</div>
+      ${o.asignada ? `<div style="margin-top:6px">Picker: <b>${esc(o.pickerNombre || o.picker)}</b></div><div>${avance(o)} ${o.comenzada ? `<span class="chip ok">en curso</span>` : `<span class="chip inf">sin empezar</span>`}</div>` : ""}</div>
+    ${(o.faltantes || []).length ? `<h2>Faltantes</h2>${o.faltantes.map(f => `<div class="ficha"><b class="mono">${esc(f.articulo)}</b> ${esc(f.descripcion || "")}<div class="tenue">${esc(f.usuario)} · ${esc(hora(f.hora))}${f.comentario ? " · “" + esc(f.comentario) + "”" : ""}</div>
+       ${puedeAsignar() ? `<button class="btn chico" data-atender="${f.id}">✔ Repuesto / atendido</button>` : ""}</div>`).join("")}` : ""}
+    <div class="fila" style="margin:8px 0">
+      <a class="btn" href="${urlCaratula(o)}" target="_blank">📄 Ver carátula</a>
+      <button class="btn" id="bFlujo">🔗 Flujo de documentos</button>
+      ${puedeAsignar() && o.asignada ? `<button class="btn" id="bReimprimir">🖨 Reimprimir carátula</button>` : ""}
+    </div>
+    ${!o.caratula && o.asignada ? `<p class="tenue" style="font-size:12px">Esta OP se asignó desde el WMS: no hay simulación guardada; se usa el "Ver OP" del WMS con el picker.</p>` : ""}
+    <div id="resDet"></div>
+    ${puedeAsignar() && o.asignada ? `<h2>Prioridad <span class="tenue" style="font-weight:400;font-size:12px">(WMS: ${esc(o.prioridad ?? "-")})</span></h2>${segPrio("segPrioDet", o.prioridadNivel || "normal")}` : ""}
+    ${puedeAsignar() && o.asignada ? `<h2>Cambiar picker</h2><input id="qPicker" placeholder="Buscar picker…" style="width:100%"><div class="pickers" id="lstPickers">${listaPickers(o.picker)}</div>
+      <label class="fila"><input type="checkbox" id="chkImprimir2" checked> Imprimir la carátula nueva</label>
+      <button class="btn pri" id="bReasignar" style="width:100%" ${pk && pk.codigo !== o.picker ? "" : "disabled"}>${pk && pk.codigo !== o.picker ? `Reasignar a ${esc(pk.nombre)}` : "Elegí el picker nuevo"}</button>` : ""}`;
+  enganchar(pintarDetalle);
+  $("#bFlujo").onclick = () => verFlujo(o.op);
+  const r = $("#bReimprimir");
+  if (r) r.onclick = async () => {
+    if (enPc()) { imprimirAca(urlImprimir([o])); $("#resDet").innerHTML = `<div class="okbox">Se abre el diálogo de impresión de esta computadora.</div>`; return; }
+    r.disabled = true; r.textContent = "Imprimiendo…";
+    try { const x = await api("/api/produccion/reimprimir", "POST", { empresa: o.empresa, tipo: o.tipo, op: o.op }); $("#resDet").innerHTML = `<div class="${x.ok ? "okbox" : "error"}">${esc(x.mensaje)}</div>`; }
+    catch (e) { $("#resDet").innerHTML = `<div class="error">${esc(e.message)}</div>`; }
+    finally { r.disabled = false; r.textContent = "🖨 Reimprimir carátula"; }
+  };
+  document.querySelectorAll("#segPrioDet button").forEach(x => x.onclick = async () => {
+    if (x.classList.contains("act")) return;
+    document.querySelectorAll("#segPrioDet button").forEach(y => y.disabled = true);
+    try { const r2 = await api("/api/produccion/prioridad", "POST", { empresa: o.empresa, tipo: o.tipo, op: o.op, prioridad: x.dataset.p });
+      toast(esc(r2.mensaje), r2.ok ? "okbox" : "error"); await cargar(true); }
+    catch (e) { $("#resDet").innerHTML = `<div class="error">${esc(e.message)}</div>`; document.querySelectorAll("#segPrioDet button").forEach(y => y.disabled = false); }
+  });
+  const ra = $("#bReasignar");
+  if (ra) ra.onclick = async () => {
+    ra.disabled = true; ra.textContent = "Reasignando…";
+    try {
+      const imp2 = $("#chkImprimir2").checked;
+      const x = await api("/api/produccion/reasignar", "POST", { empresa: o.empresa, tipo: o.tipo, op: o.op, picker: pk.codigo, imprimir: imp2 && !enPc() });
+      if (x.ok && imp2 && enPc()) imprimirAca(urlImprimir([o]));
+      toast(esc(x.mensaje) + (x.errorImpresion ? `<div>🖨 ${esc(x.errorImpresion)}</div>` : ""), x.ok ? "okbox" : "error");
+      pickerElegido = null; await cargar(true);
+    } catch (e) { $("#resDet").innerHTML = `<div class="error">${esc(e.message)}</div>`; ra.disabled = false; }
+  };
+  document.querySelectorAll("[data-atender]").forEach(b => b.onclick = async () => {
+    const nota = prompt("Nota (opcional): ¿qué se hizo con el faltante?", "") ; if (nota === null) return;
+    try { await api(`/api/faltantes/${b.dataset.atender}/atender`, "POST", { motivo: nota }); toast("Faltante marcado como atendido."); await cargar(false); }
+    catch (e) { toast(esc(e.message), "error"); }
+  });
+}
+
+function pintarPickers() {
+  const prep = T.preparacion;
+  const pk = (T.pickers || []).filter(p => p.ops > 0 || p.esPicker);
+  $("#hoja").innerHTML = !pk.length ? `<div class="vacio">Sin pickers con OPs.</div>` : `<div class="tabla"><table><thead><tr><th>Picker</th><th>Usuario</th><th class="n">OPs</th><th class="n">En curso</th><th>OPs (avance)</th></tr></thead><tbody>
+    ${pk.sort((a, b) => b.ops - a.ops || a.nombre.localeCompare(b.nombre)).map(p => `<tr><td><b>${esc(p.nombre)}</b></td><td class="mono">${esc(p.codigo)}</td><td class="n">${p.ops}</td><td class="n">${p.enCurso}</td>
+      <td>${prep.filter(o => o.picker === p.codigo).map(o => `<span class="chip ${o.comenzada ? "ok" : "inf"}" title="${esc(o.empresaNombre + " · " + (o.lugar || o.destino))}">${esc(o.op)} · ${o.avance ?? 0}%</span>`).join(" ") || `<span class="tenue">libre</span>`}</td></tr>`).join("")}
+    </tbody></table></div>`;
+  pintarLado();
+}
+
+async function pintarHistorial() {
+  const h = $("#hoja");
+  h.innerHTML = `<div class="fila" style="margin-bottom:8px"><label class="c">Desde<input type="date" id="hDesde" value="${hoyStr()}"></label><label class="c">Hasta<input type="date" id="hHasta" value="${hoyStr()}"></label>
+    <button class="btn pri" id="hVer">Ver</button></div><div id="hCuerpo"><div class="vacio">Cargando…</div></div>`;
+  const ver = async () => {
+    try {
+      const l = await api(`/api/produccion/historial?desde=${$("#hDesde").value}&hasta=${$("#hHasta").value}`);
+      $("#hCuerpo").innerHTML = !l.length ? `<div class="vacio">Sin asignaciones en esas fechas.</div>` : `<div class="tabla"><table><thead><tr><th>Hora</th><th>OP</th><th>Empresa</th><th>Solicitud</th><th>Picker</th><th>Asignó</th><th>Estado</th><th class="n">Renglones</th><th>Impresión</th><th></th></tr></thead><tbody>
+        ${l.map(x => `<tr><td class="nw">${esc(hora(x.hora))}</td><td class="op">${esc(x.op)}</td><td>${esc(x.empresa_nombre || "")}</td><td class="mono">${esc(x.solicitud || "")}</td>
+          <td>${esc(x.picker_nombre || x.picker || "")}</td><td class="mono">${esc(x.asignado_por || "")}</td>
+          <td><span class="chip ${x.estado === "error" ? "err" : x.estado === "asignada" ? "ok" : "inf"}" title="${esc(x.mensaje || "")}">${esc(x.estado)}</span>${x.estado === "error" ? `<div class="tenue" style="font-size:12px">${esc(x.mensaje || "")}</div>` : ""}</td>
+          <td class="n">${num(x.renglones)}${x.con_faltante ? ` <span class="chip err">${x.con_faltante} con faltante</span>` : ""}</td>
+          <td>${x.impresiones ? `<span class="chip ok">${x.impresiones} 🖨</span>` : ""}${x.error_impresion ? `<span class="chip err" title="${esc(x.error_impresion)}">no se imprimió</span>` : ""}</td>
+          <td>${x.tiene_pdf ? `<a href="${urlCaratula({ empresa: x.empresa, tipo: x.tipo, op: x.op })}" target="_blank">📄</a>` : ""}</td></tr>`).join("")}</tbody></table></div>`;
+    } catch (e) { $("#hCuerpo").innerHTML = `<div class="error">${esc(e.message)}</div>`; }
+  };
+  $("#hVer").onclick = ver;
+  ver();
+  pintarLado();
+}
+
+
+// ------------------------------------------------------------ flujo de documentos (como el de SAP)
+let flujoQ = "", flujoRes = null, flujoErr = null, flujoCargando = false, flujoSel = null;
+const flujoCerrados = new Set(), flujoAbiertos = new Set();
+const EST_TXT = { ok: "Completo", curso: "En curso", pendiente: "Pendiente", aviso: "Con aviso", error: "Error" };
+const EST_CHIP = { ok: "ok", curso: "inf", pendiente: "", aviso: "av", error: "err" };
+const fFecha = v => !v ? "" : /^\d{4}-\d{2}-\d{2}T/.test(v) ? hora(v) : esc(v);
+function verFlujo(q) { flujoQ = String(q); flujoRes = null; flujoErr = null; flujoSel = null; flujoCerrados.clear(); flujoAbiertos.clear(); irA("flujo"); buscarFlujo(); }
+async function buscarFlujo() {
+  const q = flujoQ.trim(); if (!q) return;
+  flujoCargando = true; flujoErr = null; pintarFlujo();
+  try { flujoRes = await api("/api/produccion/flujo?q=" + encodeURIComponent(q)); flujoCerrados.clear(); flujoAbiertos.clear(); flujoSel = null; }
+  catch (e) { flujoRes = null; flujoErr = e.message; }
+  finally { flujoCargando = false; pintarFlujo(); }
+}
+function pasosFlujo(f) {
+  // resumen del pedido en una línea: de la solicitud al despacho
+  const hijos = f.hijos || [], ops = hijos.filter(h => h.tipo === "op");
+  const peor = l => { const o = ["error", "aviso", "curso", "pendiente", "ok"]; const e = l.map(x => x.estado); return o.find(x => e.includes(x)) || "pendiente"; };
+  const todos = (l, t) => l.flatMap(x => (x.hijos || []).filter(h => h.tipo === t || (t === "asignacion" && h.tipo === "asignacion")));
+  const asig = todos(ops, "asignacion").filter(x => x.estado === "ok"), pick = todos(ops, "picking");
+  const p = [
+    { t: "Solicitud", e: "ok", s: f.numero || "—" },
+    { t: "Orden de prep.", e: ops.length ? peor(ops) === "error" ? "error" : "ok" : "pendiente", s: ops.length ? ops.map(o => o.numero).join(", ") : "sin OP" },
+    { t: "Asignación", e: ops.length && asig.length >= ops.length ? "ok" : asig.length ? "curso" : "pendiente", s: asig.length ? asig[asig.length - 1].numero : "sin asignar" },
+    { t: "Picking", e: pick.length ? peor(pick) : "pendiente", s: pick.length ? (pick.map(x => x.estadoTexto).filter(Boolean)[0] || "") : "sin empezar" },
+  ];
+  for (const t of ["control", "bultos", "despacho"]) {
+    const n = hijos.find(h => h.tipo === t);
+    p.push({ t: { control: "Control", bultos: "Bultos", despacho: "Despacho" }[t], e: n ? n.estado : "pendiente", s: n ? (n.estadoTexto || "") : "" });
+  }
+  const col = { ok: "var(--ok)", curso: "var(--info)", aviso: "var(--aviso)", error: "var(--error)", pendiente: "" };
+  return `<div class="pasos">${p.map((x, i) => `<div class="paso" style="${col[x.e] ? "--c:" + col[x.e] : ""}"><i>${x.e === "ok" ? "✓" : x.e === "error" ? "!" : i + 1}</i><b>${esc(x.t)}</b><span>${esc(x.s)}</span></div>`).join("")}</div>`;
+}
+function filasFlujo(n, nivel, ruta, out) {
+  const tiene = (n.hijos || []).length > 0, cerrado = flujoCerrados.has(ruta), abierto = flujoAbiertos.has(ruta);
+  out.push(`<tr class="nodo ${nivel === 0 ? "raiz" : ""} ${flujoSel === ruta ? "sel" : ""}" data-r="${esc(ruta)}">
+    <td><div class="doc"><span class="sangria" style="width:${nivel * 22}px"></span><button class="tog ${tiene ? "" : "nada"}" data-tog="${esc(ruta)}" title="${cerrado ? "Expandir" : "Contraer"}">${cerrado ? "+" : "−"}</button>
+      <span class="ico e-${esc(n.estado)}"></span>${esc(n.titulo)}</div></td>
+    <td class="mono nw">${esc(n.numero ?? "")}</td>
+    <td><span class="chip ${EST_CHIP[n.estado] ?? ""}">${esc(EST_TXT[n.estado] || n.estado)}</span>${n.estadoTexto ? ` <span class="tenue" style="font-size:12.5px">${esc(n.estadoTexto)}</span>` : ""}</td>
+    <td class="nw">${fFecha(n.fecha)}</td><td class="mono nw">${esc(n.usuario ?? "")}</td></tr>`);
+  if (abierto && (n.datos || []).length)
+    out.push(`<tr class="datos"><td colspan="5" style="padding-left:${nivel * 22 + 40}px"><div class="kv">${n.datos.map(d => `<div><span>${esc(d.campo)}:</span> <b>${esc(typeof d.valor === "number" ? num(d.valor, 2) : d.valor)}</b></div>`).join("")}</div></td></tr>`);
+  if (tiene && !cerrado) n.hijos.forEach((h, i) => filasFlujo(h, nivel + 1, ruta + "." + i, out));
+}
+function pintarFlujo() {
+  const h = $("#hoja");
+  const busca = `<div class="fila fBusca" style="margin-bottom:6px;align-items:flex-end">
+      <label class="c">OP, solicitud, remito o bulto<input id="flQ" value="${esc(flujoQ)}" placeholder="Ej.: 57558 · 11415-10 · Rem:160197" style="width:280px"></label>
+      <button class="btn pri" id="flVer" ${flujoCargando ? "disabled" : ""}>${flujoCargando ? "Buscando…" : "Ver flujo"}</button>
+      ${flujoRes ? `<button class="btn" id="flAbrir">Expandir todo</button><button class="btn" id="flDatos">Ver todos los datos</button><button class="btn" id="flImp">🖨 Imprimir</button>` : ""}</div>`;
+  let cuerpo;
+  if (flujoErr) cuerpo = `<div class="error">${esc(flujoErr)}</div>`;
+  else if (flujoCargando && !flujoRes) cuerpo = `<div class="vacio">Armando el flujo del pedido (WMS, LES y SONA)…</div>`;
+  else if (!flujoRes) cuerpo = `<div class="vacio">Buscá una OP, una solicitud, un remito o un bulto para ver la cadena completa de documentos del pedido:<br>
+      solicitud → orden de preparación → asignación / carátula → picking → control → bultos → despacho, con el estado, la fecha y el usuario de cada paso.<br><br>
+      También podés abrirlo desde el detalle de cualquier OP (botón “🔗 Flujo de documentos”).</div>`;
+  else {
+    const r = flujoRes, filas = [];
+    filasFlujo(r.flujo, 0, "0", filas);
+    cuerpo = `<div class="fila" style="gap:14px;font-size:13px"><span>Solicitud <b class="mono">${esc(r.solicitud || "—")}</b></span><span>Remito <b class="mono">${esc(r.remito || "—")}</b></span>
+        <span>OP <b class="mono">${esc((r.ops || []).join(", ") || "—")}</b></span><span class="tenue">Buscado: ${esc(r.busqueda)}</span></div>
+      ${r.avisoLes ? `<div class="aviso">${esc(r.avisoLes)}</div>` : ""}
+      ${pasosFlujo(r.flujo)}
+      <div class="tabla"><table class="arbol"><thead><tr><th>Documento</th><th>Número</th><th>Estado</th><th>Fecha</th><th>Usuario</th></tr></thead><tbody>${filas.join("")}</tbody></table></div>
+      <p class="tenue noimp" style="font-size:12px;margin:6px 2px">Tocá una fila para ver sus datos · <b>+ / −</b> abre o cierra la rama.</p>`;
+  }
+  h.innerHTML = busca + cuerpo;
+  const q = $("#flQ");
+  q.oninput = () => { flujoQ = q.value; };
+  q.onkeydown = e => { if (e.key === "Enter") buscarFlujo(); };
+  $("#flVer").onclick = buscarFlujo;
+  if (!flujoRes && !flujoCargando) q.focus();
+  const ab = $("#flAbrir"); if (ab) ab.onclick = () => { flujoCerrados.clear(); pintarFlujo(); };
+  const da = $("#flDatos"); if (da) da.onclick = () => {
+    const todas = []; const rec = (n, r) => { todas.push(r); (n.hijos || []).forEach((x, i) => rec(x, r + "." + i)); }; rec(flujoRes.flujo, "0");
+    const abrir = todas.some(r => !flujoAbiertos.has(r)); flujoAbiertos.clear(); if (abrir) todas.forEach(r => flujoAbiertos.add(r)); flujoCerrados.clear(); pintarFlujo(); };
+  const im = $("#flImp"); if (im) im.onclick = () => window.print();
+  document.querySelectorAll("[data-tog]").forEach(b => b.onclick = e => { e.stopPropagation(); const r = b.dataset.tog; flujoCerrados.has(r) ? flujoCerrados.delete(r) : flujoCerrados.add(r); pintarFlujo(); });
+  document.querySelectorAll(".arbol tr.nodo").forEach(tr => tr.onclick = () => { const r = tr.dataset.r; flujoSel = r; flujoAbiertos.has(r) ? flujoAbiertos.delete(r) : flujoAbiertos.add(r); pintarFlujo(); });
+}
+
+// ------------------------------------------------------------ configuración (impresora y usuario del WMS)
+$("#bConfig").onclick = async () => {
+  const m = $("#modal"), c = $("#modalCuerpo");
+  c.innerHTML = `<div class="vacio">Cargando…</div>`; m.classList.remove("oculto");
+  let cf;
+  try { cf = await api("/api/produccion/config"); } catch (e) { c.innerHTML = `<div class="error">${esc(e.message)}</div><button class="btn" onclick="cerrarModal()">Cerrar</button>`; return; }
+  const adm = yo && (["analista", "admin"].includes(yo.rol) || tiene("panel") === true);
+  c.innerHTML = `<h2>⚙ Configuración del panel de producción</h2>
+    <h2 style="margin-top:4px">¿Dónde imprime esta computadora?</h2>
+    <label class="c">Las carátulas que se imprimen desde esta PC salen por…<select id="cDonde">
+      <option value="pc" ${enPc() ? "selected" : ""}>la impresora de ESTA computadora (se abre el diálogo de impresión)</option>
+      <option value="servidor" ${enPc() ? "" : "selected"}>la impresora de la PC del servidor SONA (sin diálogo)</option></select></label>
+    <div class="tenue" style="font-size:12px">Se guarda en esta computadora: cada PC elige la suya.</div>
+    <h2>Impresora del servidor</h2>
+    ${cf.windows ? "" : `<div class="aviso">El servidor no está en Windows: la impresión directa no está disponible.</div>`}
+    <label class="c">Impresora (PC del servidor SONA)<select id="cImp"><option value="">Predeterminada de Windows${cf.predeterminada ? " (" + esc(cf.predeterminada) + ")" : ""}</option>
+      ${(cf.impresoras || []).map(p => `<option ${p === cf.impresora ? "selected" : ""}>${esc(p)}</option>`).join("")}
+      ${cf.impresora && !(cf.impresoras || []).includes(cf.impresora) ? `<option selected>${esc(cf.impresora)}</option>` : ""}</select></label>
+    <div class="fila"><label class="fila"><input type="checkbox" id="cAuto" ${cf.imprimirAlAsignar ? "checked" : ""}> Imprimir la carátula al asignar</label>
+      <label class="c" style="flex-direction:row;align-items:center;gap:6px">Copias <input type="number" id="cCopias" min="1" max="5" value="${cf.copias}" style="width:64px"></label></div>
+    <div class="fila"><button class="btn" id="cProbar">🖨 Imprimir una prueba</button><span id="cProbarRes"></span></div>
+    <h2>Prioridad de preparación</h2>
+    <label class="c">En el WMS sale primero la OP con…<select id="cPrio">
+      <option value="0" ${cf.prioridadMayorPrimero ? "" : "selected"}>el número MÁS BAJO (1 = más urgente)</option>
+      <option value="1" ${cf.prioridadMayorPrimero ? "selected" : ""}>el número MÁS ALTO (99 = más urgente)</option></select></label>
+    <div class="tenue" style="font-size:12px">Valores que pone SONA: ${(cf.niveles || []).map(n => `${esc(n.nivel)} = ${n.valor}`).join(" · ")} (normal no se toca; el WMS pone 50).</div>
+    <h2>Usuario del WMS del panel</h2>
+    <p class="tenue" style="margin:0;font-size:12.5px">Con este usuario SONA lee las bandejas del WMS y asigna (sale en la carátula como "Usuario"). Vacío = el usuario de quien usa el panel. También se usa para mostrarle a cada picker sus OPs en la app.</p>
+    <div class="fila"><label class="c">Usuario<input id="cUsr" value="${esc(cf.usuario || "")}" ${adm ? "" : "disabled"} style="width:150px"></label>
+      <label class="c">Clave ${cf.claveCargada ? "(cargada)" : ""}<input id="cClave" type="password" placeholder="${cf.claveCargada ? "sin cambios" : ""}" ${adm ? "" : "disabled"} style="width:150px"></label></div>
+    ${adm ? "" : `<div class="tenue" style="font-size:12px">El usuario del WMS lo cambian analistas y administradores.</div>`}
+    <div id="cRes"></div>
+    <div class="fila" style="justify-content:flex-end"><button class="btn" onclick="cerrarModal()">Cancelar</button><button class="btn pri" id="cGuardar">Guardar</button></div>`;
+  const datos = () => {
+    const d = { impresora: $("#cImp").value, imprimirAlAsignar: $("#cAuto").checked, copias: Number($("#cCopias").value) || 1, prioridadMayorPrimero: $("#cPrio").value === "1" };
+    if (adm) { d.usuario = $("#cUsr").value.trim(); if ($("#cClave").value) d.clave = $("#cClave").value; }
+    return d;
+  };
+  $("#cGuardar").onclick = async () => {
+    try { try { localStorage.setItem("sona_imprimir_en", $("#cDonde").value); } catch {}
+      await api("/api/produccion/config", "PUT", datos()); cerrarModal(); toast("Configuración guardada."); cargar(true); }
+    catch (e) { $("#cRes").innerHTML = `<div class="error">${esc(e.message)}</div>`; }
+  };
+  $("#cProbar").onclick = async () => {
+    $("#cProbarRes").textContent = "Guardando e imprimiendo…";
+    try { await api("/api/produccion/config", "PUT", { impresora: $("#cImp").value, imprimirAlAsignar: $("#cAuto").checked, copias: Number($("#cCopias").value) || 1 });
+      await api("/api/produccion/probar-impresora", "POST"); $("#cProbarRes").innerHTML = `<span class="chip ok">enviada</span>`; }
+    catch (e) { $("#cProbarRes").innerHTML = `<span class="chip err">${esc(e.message)}</span>`; }
+  };
+};
+function cerrarModal() { $("#modal").classList.add("oculto"); }
+$("#modal").onclick = e => { if (e.target.id === "modal") cerrarModal(); };
+
+// ------------------------------------------------------------ arranque
+async function iniciar() {
+  $("#pantallaLogin").classList.add("oculto"); $("#app").classList.remove("oculto");
+  try { yo = await api("/api/yo"); } catch { return; }
+  const ET = { produccion: "Producción", supervisor: "Supervisor (solo mira)", analista: "Analista", admin: "Administrador" };
+  $("#sub").textContent = (yo.nombre || yo.usuario) + " · " + (ET[yo.rol] || yo.rol);
+  if (tiene("produccion_ver") === false || (tiene("produccion_ver") === null && !["produccion", "supervisor", "analista", "admin"].includes(yo.rol))) { $("#hoja").innerHTML = `<div class="error">Tu usuario no tiene permiso para el panel de producción. Pedíselo a un administrador (ZUSR › Permisos).</div>`; return; }
+  $("#bConfig").classList.toggle("oculto", !puedeAsignar());
+  conectar();
+  await cargar(true);
+  setInterval(() => { if (document.visibilityState === "visible") cargar(false); }, 60000);
+}
+if (token) iniciar(); else $("#pantallaLogin").classList.remove("oculto");
+</script>
+</body>
+</html>

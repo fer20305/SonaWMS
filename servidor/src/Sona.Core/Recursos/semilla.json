@@ -1,0 +1,656 @@
+{
+ "empresas": [
+  {
+   "codigo": 34,
+   "nombre": "Pehuén Hogar"
+  },
+  {
+   "codigo": 1200,
+   "nombre": "Laurel Gourmet"
+  },
+  {
+   "codigo": 146,
+   "nombre": "Molle Bazar"
+  },
+  {
+   "codigo": 124,
+   "nombre": "Urunday Tech"
+  },
+  {
+   "codigo": 166,
+   "nombre": "Junco Papelera"
+  },
+  {
+   "codigo": 97,
+   "nombre": "Andes Consumo"
+  },
+  {
+   "codigo": 169,
+   "nombre": "Raulí Golosinas"
+  },
+  {
+   "codigo": 149,
+   "nombre": "Mañío Papel"
+  },
+  {
+   "codigo": 1224,
+   "nombre": "Jacarandá Flores"
+  },
+  {
+   "codigo": 36,
+   "nombre": "Algarrobo Insumos"
+  },
+  {
+   "codigo": 1213,
+   "nombre": "Tepa Fitness"
+  },
+  {
+   "codigo": 38,
+   "nombre": "Mburucuyá Natural"
+  },
+  {
+   "codigo": 80,
+   "nombre": "Ceibo Moda"
+  },
+  {
+   "codigo": 1189,
+   "nombre": "Canelo Pet"
+  },
+  {
+   "codigo": 43,
+   "nombre": "Caranday Mobiliario"
+  },
+  {
+   "codigo": 1181,
+   "nombre": "Pampa Cosmética"
+  },
+  {
+   "codigo": 85,
+   "nombre": "Cumbre Alimentos"
+  },
+  {
+   "codigo": 1211,
+   "nombre": "Nogal Hogar"
+  },
+  {
+   "codigo": 130,
+   "nombre": "Trébol Juguetes"
+  },
+  {
+   "codigo": 37,
+   "nombre": "Ñandú Snacks"
+  },
+  {
+   "codigo": 1220,
+   "nombre": "Mistral Electro"
+  },
+  {
+   "codigo": 170,
+   "nombre": "Timbó Muebles"
+  },
+  {
+   "codigo": 1237,
+   "nombre": "Horizonte Marketing"
+  },
+  {
+   "codigo": 125,
+   "nombre": "Jarilla Textil"
+  },
+  {
+   "codigo": 1217,
+   "nombre": "Maitén Kids"
+  },
+  {
+   "codigo": 142,
+   "nombre": "Brisa Textil"
+  },
+  {
+   "codigo": 167,
+   "nombre": "Sauce Bebés"
+  },
+  {
+   "codigo": 88,
+   "nombre": "Retamo Vidrios"
+  },
+  {
+   "codigo": 26,
+   "nombre": "Arrayán Salud"
+  },
+  {
+   "codigo": 17,
+   "nombre": "Polar Lácteos"
+  },
+  {
+   "codigo": 1218,
+   "nombre": "Ombú Farmacéutica"
+  },
+  {
+   "codigo": 16,
+   "nombre": "Junquillo Regalos"
+  },
+  {
+   "codigo": 14,
+   "nombre": "Queñoa Música"
+  },
+  {
+   "codigo": 41,
+   "nombre": "Radal Óptica"
+  },
+  {
+   "codigo": 1175,
+   "nombre": "Aromo Perfumes"
+  },
+  {
+   "codigo": 1225,
+   "nombre": "Calafate Outdoor"
+  },
+  {
+   "codigo": 1174,
+   "nombre": "Cedro Seguridad"
+  },
+  {
+   "codigo": 1196,
+   "nombre": "Sierra Hogar"
+  },
+  {
+   "codigo": 1202,
+   "nombre": "Ceibal Calzado"
+  },
+  {
+   "codigo": 90,
+   "nombre": "Sombra Iluminación"
+  },
+  {
+   "codigo": 131,
+   "nombre": "Lapacho Muebles"
+  },
+  {
+   "codigo": 132,
+   "nombre": "Yerba Norte"
+  },
+  {
+   "codigo": 134,
+   "nombre": "Chañar Snacks"
+  },
+  {
+   "codigo": 100,
+   "nombre": "Quebracho Ferretería"
+  },
+  {
+   "codigo": 123,
+   "nombre": "Puna Minerales"
+  },
+  {
+   "codigo": 1192,
+   "nombre": "Piquillín Dulces"
+  },
+  {
+   "codigo": 1191,
+   "nombre": "Austral Deportes"
+  },
+  {
+   "codigo": 1193,
+   "nombre": "Litoral Farma"
+  },
+  {
+   "codigo": 1194,
+   "nombre": "Faro Librería"
+  },
+  {
+   "codigo": 18,
+   "nombre": "Cortadera Deco"
+  },
+  {
+   "codigo": 1177,
+   "nombre": "Tala Vinos"
+  },
+  {
+   "codigo": 1190,
+   "nombre": "Calden Bebidas"
+  },
+  {
+   "codigo": 1216,
+   "nombre": "Notro Bazar - STEAM"
+  },
+  {
+   "codigo": 6,
+   "nombre": "Notro Bazar",
+   "alias": [
+    "Notro Bazar",
+    "Notro Bazar",
+    "Notro Bazar",
+    "Notro Bazar",
+    "Notro Bazar"
+   ]
+  },
+  {
+   "codigo": 1197,
+   "nombre": "Ulmo Cafés"
+  },
+  {
+   "codigo": 1201,
+   "nombre": "Patagonia Foods"
+  },
+  {
+   "codigo": 1221,
+   "nombre": "Ciprés Construcción"
+  },
+  {
+   "codigo": 1236,
+   "nombre": "Pindó Electro"
+  },
+  {
+   "codigo": 1233,
+   "nombre": "Guayubira Herramientas"
+  },
+  {
+   "codigo": 1214,
+   "nombre": "Tipa Electrónica"
+  },
+  {
+   "codigo": 89,
+   "nombre": "Coihue Energía"
+  },
+  {
+   "codigo": 141,
+   "nombre": "Espinillo Agro"
+  },
+  {
+   "codigo": 126,
+   "nombre": "Yatay Cosmética"
+  },
+  {
+   "codigo": 150,
+   "nombre": "Sur Mascotas"
+  },
+  {
+   "codigo": 1176,
+   "nombre": "Palmar Indumentaria"
+  },
+  {
+   "codigo": 1240,
+   "nombre": "Ñire Cuidado Personal"
+  },
+  {
+   "codigo": 1219,
+   "nombre": "Brea Pinturas"
+  },
+  {
+   "codigo": 140,
+   "nombre": "Oasis Higiene"
+  },
+  {
+   "codigo": 1238,
+   "nombre": "Lenga Logística"
+  },
+  {
+   "codigo": 1,
+   "nombre": "SONA"
+  },
+  {
+   "codigo": 151,
+   "nombre": "Delta Tech"
+  },
+  {
+   "codigo": 28,
+   "nombre": "Totora Envases"
+  },
+  {
+   "codigo": 1210,
+   "nombre": "Cóndor Óptica"
+  },
+  {
+   "codigo": 144,
+   "nombre": "Río Claro Bebidas"
+  },
+  {
+   "codigo": 1203,
+   "nombre": "Tola Limpieza"
+  }
+ ],
+ "zonas": [
+  {
+   "cara": "DD",
+   "tipo": "reserva",
+   "empresa": 6,
+   "rol_zona": "nucleo",
+   "mezcla": "monoproducto"
+  },
+  {
+   "cara": "DE",
+   "tipo": "reserva",
+   "empresa": 6,
+   "rol_zona": "nucleo",
+   "mezcla": "monoproducto"
+  },
+  {
+   "cara": "DF",
+   "tipo": "reserva",
+   "empresa": 6,
+   "rol_zona": "nucleo",
+   "mezcla": "monoproducto"
+  },
+  {
+   "cara": "DG",
+   "tipo": "reserva",
+   "empresa": 6,
+   "rol_zona": "nucleo",
+   "mezcla": "monoproducto"
+  },
+  {
+   "cara": "DDE",
+   "tipo": "reserva",
+   "empresa": 6,
+   "rol_zona": "nucleo",
+   "mezcla": "monoproducto"
+  },
+  {
+   "cara": "DFG",
+   "tipo": "reserva",
+   "empresa": 6,
+   "rol_zona": "nucleo",
+   "mezcla": "monoproducto"
+  },
+  {
+   "cara": "DH",
+   "tipo": "reserva",
+   "empresa": 6,
+   "rol_zona": "desborde",
+   "mezcla": "monoproducto"
+  },
+  {
+   "cara": "DI",
+   "tipo": "reserva",
+   "empresa": 6,
+   "rol_zona": "desborde",
+   "mezcla": "monoproducto"
+  },
+  {
+   "cara": "IG",
+   "tipo": "reserva",
+   "empresa": 14,
+   "rol_zona": "nucleo",
+   "mezcla": "monoproducto"
+  },
+  {
+   "cara": "IF",
+   "tipo": "reserva",
+   "empresa": 14,
+   "rol_zona": "nucleo",
+   "mezcla": "monoproducto"
+  },
+  {
+   "cara": "IGF",
+   "tipo": "reserva",
+   "empresa": 14,
+   "rol_zona": "nucleo",
+   "mezcla": "monoproducto"
+  },
+  {
+   "cara": "II",
+   "tipo": "reserva",
+   "empresa": 38,
+   "rol_zona": "nucleo",
+   "mezcla": "monoproducto"
+  },
+  {
+   "cara": "IH",
+   "tipo": "reserva",
+   "empresa": 38,
+   "rol_zona": "nucleo",
+   "mezcla": "monoproducto"
+  },
+  {
+   "cara": "FI",
+   "tipo": "picking",
+   "empresa": null,
+   "rol_zona": "flex",
+   "mezcla": "libre"
+  },
+  {
+   "cara": "FC",
+   "tipo": "picking",
+   "empresa": null,
+   "rol_zona": "flex",
+   "mezcla": "libre"
+  },
+  {
+   "cara": "FD",
+   "tipo": "picking",
+   "empresa": null,
+   "rol_zona": "flex",
+   "mezcla": "libre"
+  },
+  {
+   "cara": "IE_PK",
+   "tipo": "picking",
+   "empresa": null,
+   "rol_zona": "flex",
+   "mezcla": "libre"
+  },
+  {
+   "cara": "IE-PK",
+   "tipo": "picking",
+   "empresa": null,
+   "rol_zona": "flex",
+   "mezcla": "libre"
+  },
+  {
+   "cara": "IF_PK",
+   "tipo": "picking",
+   "empresa": null,
+   "rol_zona": "flex",
+   "mezcla": "libre"
+  },
+  {
+   "cara": "ID-PK",
+   "tipo": "picking",
+   "empresa": null,
+   "rol_zona": "flex",
+   "mezcla": "libre"
+  },
+  {
+   "cara": "DJ_PK",
+   "tipo": "picking",
+   "empresa": null,
+   "rol_zona": "flex",
+   "mezcla": "libre"
+  },
+  {
+   "cara": "DC_PK",
+   "tipo": "picking",
+   "empresa": null,
+   "rol_zona": "flex",
+   "mezcla": "libre"
+  },
+  {
+   "cara": "DK_PK",
+   "tipo": "picking",
+   "empresa": null,
+   "rol_zona": "flex",
+   "mezcla": "libre"
+  },
+  {
+   "cara": "ST_PK",
+   "tipo": "picking",
+   "empresa": null,
+   "rol_zona": "flex",
+   "mezcla": "libre"
+  },
+  {
+   "cara": "CA",
+   "tipo": "proyectos",
+   "empresa": null,
+   "rol_zona": "flex",
+   "mezcla": "libre"
+  },
+  {
+   "cara": "CB",
+   "tipo": "proyectos",
+   "empresa": null,
+   "rol_zona": "flex",
+   "mezcla": "libre"
+  },
+  {
+   "cara": "CC",
+   "tipo": "proyectos",
+   "empresa": null,
+   "rol_zona": "flex",
+   "mezcla": "libre"
+  },
+  {
+   "cara": "CD",
+   "tipo": "proyectos",
+   "empresa": null,
+   "rol_zona": "flex",
+   "mezcla": "libre"
+  },
+  {
+   "cara": "CE",
+   "tipo": "proyectos",
+   "empresa": null,
+   "rol_zona": "flex",
+   "mezcla": "libre"
+  },
+  {
+   "cara": "CF",
+   "tipo": "proyectos",
+   "empresa": null,
+   "rol_zona": "flex",
+   "mezcla": "libre"
+  },
+  {
+   "cara": "CG",
+   "tipo": "proyectos",
+   "empresa": null,
+   "rol_zona": "flex",
+   "mezcla": "libre"
+  },
+  {
+   "cara": "CH",
+   "tipo": "proyectos",
+   "empresa": null,
+   "rol_zona": "flex",
+   "mezcla": "libre"
+  },
+  {
+   "cara": "CI",
+   "tipo": "proyectos",
+   "empresa": null,
+   "rol_zona": "flex",
+   "mezcla": "libre"
+  },
+  {
+   "cara": "NN",
+   "tipo": "nn",
+   "empresa": null,
+   "rol_zona": "flex",
+   "mezcla": "libre"
+  },
+  {
+   "cara": "CQ-N1",
+   "tipo": "otro_deposito",
+   "empresa": null,
+   "rol_zona": "flex",
+   "mezcla": "libre"
+  },
+  {
+   "cara": "CQ-N2",
+   "tipo": "otro_deposito",
+   "empresa": null,
+   "rol_zona": "flex",
+   "mezcla": "libre"
+  },
+  {
+   "cara": "CQ-N3",
+   "tipo": "otro_deposito",
+   "empresa": null,
+   "rol_zona": "flex",
+   "mezcla": "libre"
+  },
+  {
+   "cara": "CQ-PI",
+   "tipo": "otro_deposito",
+   "empresa": null,
+   "rol_zona": "flex",
+   "mezcla": "libre"
+  },
+  {
+   "cara": "CONTD",
+   "tipo": "otro_deposito",
+   "empresa": null,
+   "rol_zona": "flex",
+   "mezcla": "libre"
+  },
+  {
+   "cara": "CONTI",
+   "tipo": "otro_deposito",
+   "empresa": null,
+   "rol_zona": "flex",
+   "mezcla": "libre"
+  },
+  {
+   "cara": "GAPP",
+   "tipo": "otro_deposito",
+   "empresa": null,
+   "rol_zona": "flex",
+   "mezcla": "libre"
+  },
+  {
+   "cara": "G-ARS",
+   "tipo": "otro_deposito",
+   "empresa": null,
+   "rol_zona": "flex",
+   "mezcla": "libre"
+  },
+  {
+   "cara": "G-AX",
+   "tipo": "otro_deposito",
+   "empresa": null,
+   "rol_zona": "flex",
+   "mezcla": "libre"
+  },
+  {
+   "cara": "G-LOR",
+   "tipo": "otro_deposito",
+   "empresa": null,
+   "rol_zona": "flex",
+   "mezcla": "libre"
+  },
+  {
+   "cara": "G-PAM",
+   "tipo": "otro_deposito",
+   "empresa": null,
+   "rol_zona": "flex",
+   "mezcla": "libre"
+  },
+  {
+   "cara": "G-PEP",
+   "tipo": "otro_deposito",
+   "empresa": null,
+   "rol_zona": "flex",
+   "mezcla": "libre"
+  },
+  {
+   "cara": "G-BIM",
+   "tipo": "otro_deposito",
+   "empresa": null,
+   "rol_zona": "flex",
+   "mezcla": "libre"
+  },
+  {
+   "cara": "LOC1",
+   "tipo": "otro_deposito",
+   "empresa": null,
+   "rol_zona": "flex",
+   "mezcla": "libre"
+  },
+  {
+   "cara": "LOCK1",
+   "tipo": "otro_deposito",
+   "empresa": null,
+   "rol_zona": "flex",
+   "mezcla": "libre"
+  }
+ ]
+}

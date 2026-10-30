@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0B2A42">
+<title>SONA Supervisor</title>
+<style>
+  :root {
+    --marino: #0B2A42; --marino2: #1C4C73; --naranja: #F47920; --naranja-claro: #FFE7D4;
+    --fondo: #EEF1F4; --panel: #FFFFFF; --linea: #D5DCE3; --texto: #1B2733; --tenue: #5D6B79;
+    --ok: #1E8E3E; --ok-claro: #E3F4E8; --aviso: #B7791F; --aviso-claro: #FFF5DB; --error: #C62828; --error-claro: #FDE7E7;
+    --info: #1565C0; --info-claro: #E3EEFB;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--fondo); color: var(--texto); font: 14px/1.45 "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif; }
+  button, input, select { font: inherit; }
+  .barra { background: var(--marino); color: #fff; padding: 10px 16px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 5; }
+  .barra .logo { width: 34px; height: 34px; border-radius: 8px; background: #fff1; display: grid; place-items: center; color: var(--naranja); font-weight: 900; font-size: 22px; }
+  .barra h1 { font-size: 17px; margin: 0; font-weight: 700; }
+  .barra .sub { font-size: 12px; opacity: .75; }
+  .barra .der { margin-left: auto; display: flex; align-items: center; gap: 12px; font-size: 12px; }
+  .vivo { display: inline-flex; align-items: center; gap: 6px; }
+  .vivo i { width: 8px; height: 8px; border-radius: 50%; background: #FF8A80; display: inline-block; }
+  .vivo.on i { background: #5BD17E; }
+  .franja { height: 3px; background: var(--naranja); }
+  .tabs { display: flex; gap: 4px; padding: 10px 16px 0; overflow-x: auto; }
+  .tabs button { border: 0; background: transparent; padding: 9px 14px; border-radius: 10px 10px 0 0; color: var(--tenue); cursor: pointer; white-space: nowrap; font-weight: 600; }
+  .tabs button.act { background: var(--panel); color: var(--marino); box-shadow: inset 0 3px 0 var(--naranja); }
+  main { padding: 0 16px 40px; }
+  .hoja { background: var(--panel); border-radius: 0 12px 12px 12px; padding: 16px; min-height: 60vh; }
+  .fila { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; }
+  .kpis { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin: 14px 0; }
+  .kpi { border: 1px solid var(--linea); border-radius: 12px; padding: 10px 12px; border-left: 4px solid var(--c, var(--marino2)); }
+  .kpi b { display: block; font-size: 24px; font-variant-numeric: tabular-nums; color: var(--texto); }
+  .kpi span { font-size: 12px; color: var(--tenue); }
+  label.c { display: flex; flex-direction: column; font-size: 12px; color: var(--tenue); gap: 3px; }
+  input, select { border: 1px solid var(--linea); border-radius: 8px; padding: 7px 9px; background: #fff; color: var(--texto); min-width: 0; }
+  .btn { border: 1px solid var(--linea); background: #fff; color: var(--marino); border-radius: 8px; padding: 7px 14px; cursor: pointer; font-weight: 600; }
+  .btn.pri { background: var(--naranja); border-color: var(--naranja); color: #fff; }
+  .btn:hover { filter: brightness(.97); }
+  .tabla { overflow-x: auto; border: 1px solid var(--linea); border-radius: 10px; margin-top: 10px; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; }
+  th { background: #E9EEF3; color: var(--marino); text-align: left; font-weight: 600; padding: 7px 9px; position: sticky; top: 0; cursor: pointer; white-space: nowrap; user-select: none; }
+  td { padding: 6px 9px; border-top: 1px solid #EDF0F3; white-space: nowrap; }
+  td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; }
+  td.largo { white-space: normal; min-width: 220px; }
+  tr.clic { cursor: pointer; }
+  tr.clic:hover td { background: #FFF6EE; }
+  tr.sel td { background: var(--naranja-claro); }
+  .mono { font-family: Consolas, "Cascadia Mono", monospace; }
+  .chip { display: inline-block; padding: 1px 9px; border-radius: 99px; font-size: 11.5px; font-weight: 700; background: #EEF0F2; color: var(--tenue); }
+  .chip.ok { background: var(--ok-claro); color: var(--ok); } .chip.err { background: var(--error-claro); color: var(--error); }
+  .chip.av { background: var(--aviso-claro); color: var(--aviso); } .chip.inf { background: var(--info-claro); color: var(--info); }
+  .chip.nar { background: var(--naranja-claro); color: #B4510A; }
+  h2 { font-size: 15px; color: var(--marino); margin: 18px 0 6px; }
+  .horas { display: flex; align-items: flex-end; gap: 4px; height: 100px; padding-top: 14px; margin: 6px 0 4px; overflow-x: auto; }
+  .horas div { display: flex; flex-direction: column; align-items: center; font-size: 10px; color: var(--tenue); min-width: 24px; }
+  .horas s { display: block; width: 20px; background: var(--naranja); border-radius: 3px 3px 0 0; text-decoration: none; }
+  .vacio { color: var(--tenue); padding: 20px; text-align: center; }
+  .error { background: var(--error-claro); color: var(--error); padding: 10px 12px; border-radius: 8px; font-weight: 600; margin: 8px 0; }
+  .login { max-width: 360px; margin: 10vh auto; background: var(--panel); border-radius: 14px; padding: 24px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 6px 30px #0B2A4214; }
+  .login h1 { margin: 0; color: var(--marino); font-size: 22px; }
+  .login p { margin: 0; color: var(--tenue); }
+  .dos { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+  .dos > div, .hoja, main, section { min-width: 0; }
+  .tabla { max-width: 100%; }
+  @media (max-width: 800px) { .dos { grid-template-columns: minmax(0, 1fr); } main { padding: 0 8px 30px; } .hoja { padding: 12px; } .barra .sub { display: none; } }
+  .oculto { display: none !important; }
+</style>
+</head>
+<body>
+<div id="pantallaLogin" class="login oculto">
+  <h1>SONA <span style="color:var(--naranja)">Supervisor</span></h1>
+  <p>Ingresá con tu usuario y clave del WMS.</p>
+  <label class="c">Usuario<input id="lUsuario" autocomplete="username" autocapitalize="characters"></label>
+  <label class="c">Clave<input id="lClave" type="password" autocomplete="current-password"></label>
+  <div id="lError" class="error oculto"></div>
+  <button class="btn pri" id="lEntrar">Ingresar</button>
+  <p style="font-size:12px">Es de solo lectura: muestra lo que hacen los operarios en tiempo real. El rol "Supervisor" se asigna en el panel (ZUSR).</p>
+</div>
+
+<div id="app" class="oculto">
+  <div class="barra">
+    <div class="logo">S</div>
+    <div><h1>SONA Supervisor</h1><div class="sub" id="sub"></div></div>
+    <div class="der"><span class="vivo" id="vivo"><i></i><span>Conectando…</span></span><button class="btn" id="salir" style="padding:4px 10px">Salir</button></div>
+  </div>
+  <div class="franja"></div>
+  <div class="tabs" id="tabs">
+    <button data-t="vivo" class="act">En vivo</button>
+    <button data-t="prod">Productividad</button>
+    <button data-t="movs">Movimientos</button>
+    <button data-t="pick">Picking y control</button>
+  </div>
+  <main><div class="hoja">
+    <section id="t-vivo"></section>
+    <section id="t-prod" class="oculto">
+      <div class="fila">
+        <label class="c">Desde<input type="date" id="pDesde"></label>
+        <label class="c">Hasta<input type="date" id="pHasta"></label>
+        <button class="btn pri" id="pVer">Ver</button>
+        <button class="btn" data-r="0">Hoy</button><button class="btn" data-r="1">Ayer</button><button class="btn" data-r="7">7 días</button><button class="btn" data-r="mes">Este mes</button>
+      </div>
+      <div id="pCuerpo"></div>
+    </section>
+    <section id="t-movs" class="oculto">
+      <div class="fila">
+        <label class="c">Desde<input type="date" id="mDesde"></label>
+        <label class="c">Hasta<input type="date" id="mHasta"></label>
+        <label class="c">Operario<input id="mUsuario" placeholder="todos" style="width:120px"></label>
+        <label class="c">Tipo<select id="mTipo"></select></label>
+        <label class="c">Estado<select id="mEstado"></select></label>
+        <label class="c">Texto<input id="mTexto" placeholder="contenedor, artículo, posición" style="width:200px"></label>
+        <button class="btn pri" id="mVer">Buscar</button>
+      </div>
+      <div id="mCuerpo"></div>
+    </section>
+    <section id="t-pick" class="oculto">
+      <div class="fila">
+        <label class="c">Desde<input type="date" id="kDesde"></label>
+        <label class="c">Hasta<input type="date" id="kHasta"></label>
+        <label class="c">Operario<input id="kUsuario" placeholder="todos" style="width:120px"></label>
+        <button class="btn pri" id="kVer">Ver</button>
+      </div>
+      <div id="kCuerpo"></div>
+    </section>
+  </div></main>
+</div>
+
+<script>
+"use strict";
+const $ = s => document.querySelector(s);
+const ET = { pendiente_wms: "Pendiente WMS", aplicado: "Aplicado", error: "Error", esperando_autorizacion: "Esperando autorización", rechazado: "Rechazado",
+  anulado: "Anulado", registrado: "Registrado", transferencia: "Transferencia", guardado: "Guardado", cambio_estado: "Cambio de estado", reubicar_cajas: "Reubicar cajas",
+  ajuste: "Ajuste", anulacion: "Anulación", alta: "Crear contenedor", picking: "Picking", medicion: "Medición (bultos)", control_pedido: "Control de pedido",
+  pick: "Pick", inicio: "Inicio OP", fin: "OP terminada", isla: "A isla", error_lectura: "Error evitado", rechazo_wms: "Rechazo WMS", pausa: "Pausa", retoma: "Retoma",
+  bultos: "Medición", cerrar: "Cerrar contenedor", postergar: "Postergar OP", conteo: "Conteo", completo: "Completo", parcial: "Con observación",
+  maquinista: "Maquinista", picker: "Picker", supervisor: "Supervisor", analista: "Analista", admin: "Administrador" };
+const et = s => s == null ? "" : (ET[s] || s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const num = (v, d = 0) => v == null || v === "" ? "" : Number(v).toLocaleString("es-AR", { maximumFractionDigits: d });
+const hora = iso => { if (!iso) return ""; const d = new Date(iso); return d.toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit" }) + " " + d.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" }); };
+const hoyStr = (dd = 0) => { const d = new Date(); d.setDate(d.getDate() - dd); return d.toLocaleDateString("sv-SE"); };
+function chipEstado(e) {
+  const c = { aplicado: "ok", registrado: "ok", completo: "ok", ok: "ok", error: "err", rechazado: "err", falta: "err", pendiente_wms: "inf",
+    esperando_autorizacion: "av", diferencia: "av", sobra: "av", parcial: "av" }[e] || "";
+  return e ? `<span class="chip ${c}">${esc(et(e))}</span>` : "";
+}
+function chipTipo(t) {
+  const c = { picking: "nar", medicion: "nar", control_pedido: "nar", pick: "nar", bultos: "nar", transferencia: "inf", guardado: "inf", error_lectura: "err", rechazo_wms: "err", pausa: "av" }[t] || "";
+  return `<span class="chip ${c}">${esc(et(t))}</span>`;
+}
+
+// ------------------------------------------------------------ sesión y API
+let token = null; try { token = localStorage.getItem("sona_sup_token"); } catch {}
+async function api(ruta) {
+  const r = await fetch(ruta, { headers: { Authorization: "Bearer " + token } });
+  const j = await r.json().catch(() => ({}));
+  if (r.status === 401) { salir(); throw new Error(j.error || "Sesión vencida"); }
+  if (!r.ok) throw new Error(j.error || ("Error " + r.status));
+  return j;
+}
+async function entrar() {
+  const u = $("#lUsuario").value.trim(), c = $("#lClave").value;
+  if (!u || !c) return;
+  $("#lEntrar").disabled = true; $("#lError").classList.add("oculto");
+  try {
+    const r = await fetch("/api/login", { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ usuario: u, clave: c, web: true, dispositivo: "WEB-" + u.toUpperCase(), modelo: navigator.userAgent.slice(0, 60), version: "web" }) });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(j.error || "No se pudo ingresar");
+    token = j.token; try { localStorage.setItem("sona_sup_token", token); localStorage.setItem("sona_sup_nombre", (j.usuario?.nombre || j.usuario?.usuario || u)); } catch {}
+    iniciar();
+  } catch (e) { $("#lError").textContent = e.message; $("#lError").classList.remove("oculto"); }
+  finally { $("#lEntrar").disabled = false; }
+}
+function salir() { token = null; try { localStorage.removeItem("sona_sup_token"); } catch {} if (ws) try { ws.close(); } catch {} $("#app").classList.add("oculto"); $("#pantallaLogin").classList.remove("oculto"); }
+$("#lEntrar").onclick = entrar;
+$("#lClave").onkeydown = e => { if (e.key === "Enter") entrar(); };
+$("#salir").onclick = salir;
+
+// ------------------------------------------------------------ tiempo real
+let ws = null, recarga = null;
+function conectar() {
+  try {
+    ws = new WebSocket((location.protocol === "https:" ? "wss://" : "ws://") + location.host + "/api/eventos?token=" + encodeURIComponent(token));
+    ws.onopen = () => { $("#vivo").classList.add("on"); $("#vivo span").textContent = "En vivo"; };
+    ws.onclose = () => { $("#vivo").classList.remove("on"); $("#vivo span").textContent = "Reconectando…"; if (token) setTimeout(conectar, 5000); };
+    ws.onmessage = () => { clearTimeout(recarga); recarga = setTimeout(() => { if (pestana === "vivo") cargarVivo(); }, 1500); };
+  } catch {}
+}
+
+// ------------------------------------------------------------ pestañas
+let pestana = "vivo";
+document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => {
+  document.querySelectorAll("#tabs button").forEach(x => x.classList.toggle("act", x === b));
+  pestana = b.dataset.t;
+  ["vivo", "prod", "movs", "pick"].forEach(t => $("#t-" + t).classList.toggle("oculto", t !== pestana));
+  ({ vivo: cargarVivo, prod: cargarProd, movs: cargarMovs, pick: cargarPick })[pestana]();
+});
+
+function kpi(t, v, color) { return `<div class="kpi" style="--c:${color || "var(--marino2)"}"><b>${v}</b><span>${esc(t)}</span></div>`; }
+function barrasHoras(ph) {
+  if (!ph || !ph.length) return "";
+  const max = Math.max(1, ...ph.map(x => x.n));
+  return `<div class="horas">${ph.map(x => `<div title="${x.n} entre las ${x.hora}:00 y las ${x.hora}:59">${x.n}<s style="height:${4 + 56 * x.n / max}px"></s>${x.hora}h</div>`).join("")}</div>`;
+}
+/** Tablas ordenables: tabla() devuelve el HTML y queda registrada; activar() les pone el orden por columna y el clic en la fila. */
+const TABLAS = {};
+function celda(c, f) {
+  const v = f[c.k];
+  switch (c.tipo) {
+    case "n": return `<td class="n">${num(v, c.d || 0)}</td>`;
+    case "mono": return `<td class="mono">${esc(v)}</td>`;
+    case "estado": return `<td>${chipEstado(v)}</td>`;
+    case "tipo": return `<td>${chipTipo(v)}</td>`;
+    case "hora": return `<td>${hora(v)}</td>`;
+    case "largo": return `<td class="largo">${esc(v)}</td>`;
+    case "et": return `<td>${esc(et(v))}</td>`;
+    default: return `<td>${esc(v)}</td>`;
+  }
+}
+function htmlTabla(id) {
+  const { cols, filas, alClic } = TABLAS[id];
+  return `<div class="tabla" id="${id}"><table><thead><tr>${cols.map(c => `<th class="${c.tipo === "n" ? "n" : ""}">${esc(c.t)}</th>`).join("")}</tr></thead>
+    <tbody>${filas.map(f => `<tr class="${alClic ? "clic" : ""}">${cols.map(c => celda(c, f)).join("")}</tr>`).join("")}</tbody></table></div>`;
+}
+function tabla(cols, filas, alClic) {
+  if (!filas || !filas.length) return `<div class="vacio">Sin datos para mostrar.</div>`;
+  const id = "t" + Math.random().toString(36).slice(2, 9);
+  TABLAS[id] = { cols, filas: filas.slice(), alClic, orden: null };
+  return htmlTabla(id);
+}
+function activar() {
+  for (const id of Object.keys(TABLAS)) {
+    const el = document.getElementById(id);
+    if (!el) { delete TABLAS[id]; continue; }
+    if (el.dataset.ok) continue;
+    el.dataset.ok = "1";
+    const t = TABLAS[id];
+    el.querySelectorAll("th").forEach((th, i) => th.onclick = () => {
+      const c = t.cols[i];
+      const asc = !(t.orden && t.orden.i === i && t.orden.asc);
+      t.orden = { i, asc };
+      t.filas.sort((a, b) => {
+        const x = a[c.k], y = b[c.k];
+        if (x == null && y == null) return 0; if (x == null) return 1; if (y == null) return -1;
+        return (x > y ? 1 : x < y ? -1 : 0) * (asc ? 1 : -1);
+      });
+      el.outerHTML = htmlTabla(id);
+      activar();
+    });
+    if (t.alClic) el.querySelectorAll("tbody tr").forEach((tr, i) => tr.onclick = () => {
+      el.querySelectorAll("tr.sel").forEach(x => x.classList.remove("sel")); tr.classList.add("sel"); t.alClic(t.filas[i]);
+    });
+  }
+}
+new MutationObserver(() => activar()).observe(document.body, { childList: true, subtree: true });
+
+// ------------------------------------------------------------ en vivo
+async function cargarVivo() {
+  const s = $("#t-vivo");
+  try {
+    const [m, p] = await Promise.all([api("/api/monitor"), api("/api/productividad?desde=" + hoyStr() + "&hasta=" + hoyStr())]);
+    const t = m.totales || {}, pt = p.totales || {};
+    $("#sub").textContent = "Servidor " + (m.version || "") + " · " + new Date().toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
+    s.innerHTML = `<div class="kpis">
+        ${kpi("Tareas hoy", num(pt.tareas), "var(--naranja)")}
+        ${kpi("Movimientos de depósito", num(pt.movimientos))}
+        ${kpi("Líneas pickeadas", num(pt.lineas_pick), "var(--naranja)")}
+        ${kpi("Unidades pickeadas", num(pt.unidades_pick), "var(--naranja)")}
+        ${kpi("Solicitudes medidas", num(pt.solicitudes_medidas), "var(--marino2)")}
+        ${kpi("Pedidos controlados", num(pt.pedidos_controlados), "var(--marino2)")}
+        ${kpi("Pendientes en el WMS", num(t.pendientes), "var(--info)")}
+        ${kpi("Errores del WMS", num(t.errores), "var(--error)")}
+        ${kpi("Esperando autorización", num(m.autorizacionesPendientes), "var(--aviso)")}
+      </div>
+      <h2>Actividad por hora</h2>${barrasHoras(p.porHora)}
+      <div class="dos"><div><h2>Operarios hoy</h2>${tabla([
+        { t: "Operario", k: "usuario", tipo: "mono" }, { t: "Nombre", k: "nombre" }, { t: "Rol", k: "rol", tipo: "et" }, { t: "Tareas", k: "tareas", tipo: "n" },
+        { t: "Movs.", k: "movimientos", tipo: "n" }, { t: "Líneas pick", k: "lineas_pick", tipo: "n" }, { t: "Medidas", k: "solicitudes_medidas", tipo: "n" },
+        { t: "Controles", k: "pedidos_controlados", tipo: "n" }, { t: "Último", k: "ultimo" }], p.operarios || [])}</div>
+      <div><h2>Últimos movimientos</h2>${tabla([
+        { t: "Hora", k: "hora_servidor", tipo: "hora" }, { t: "Operario", k: "usuario", tipo: "mono" }, { t: "Tipo", k: "tipo", tipo: "tipo" },
+        { t: "Contenedor", k: "contenedor", tipo: "mono" }, { t: "Destino", k: "destino", tipo: "mono" }, { t: "Estado", k: "estado", tipo: "estado" }], m.ultimos || [])}</div></div>`;
+  } catch (e) { s.innerHTML = `<div class="error">${esc(e.message)}</div>`; }
+}
+
+// ------------------------------------------------------------ productividad
+let prodDatos = null;
+document.querySelectorAll("#t-prod [data-r]").forEach(b => b.onclick = () => {
+  const r = b.dataset.r;
+  if (r === "mes") { const d = new Date(); $("#pDesde").value = new Date(d.getFullYear(), d.getMonth(), 1).toLocaleDateString("sv-SE"); $("#pHasta").value = hoyStr(); }
+  else if (r === "1") { $("#pDesde").value = hoyStr(1); $("#pHasta").value = hoyStr(1); }
+  else { $("#pDesde").value = hoyStr(Number(r) ? Number(r) - 1 : 0); $("#pHasta").value = hoyStr(); }
+  cargarProd();
+});
+$("#pVer").onclick = () => cargarProd();
+async function cargarProd() {
+  const c = $("#pCuerpo");
+  c.innerHTML = `<div class="vacio">Cargando…</div>`;
+  try {
+    const q = "desde=" + $("#pDesde").value + "&hasta=" + $("#pHasta").value;
+    const p = prodDatos = await api("/api/productividad?" + q);
+    const t = p.totales || {};
+    c.innerHTML = `<div class="kpis">
+        ${kpi("Operarios activos", num(t.operarios))}
+        ${kpi("Movimientos de depósito", num(t.movimientos))}
+        ${kpi("OPs terminadas", num(t.ops_terminadas), "var(--ok)")}
+        ${kpi("Líneas pickeadas", num(t.lineas_pick), "var(--naranja)")}
+        ${kpi("Unidades pickeadas", num(t.unidades_pick), "var(--naranja)")}
+        ${kpi("Líneas por hora (pickers)", t.lineas_hora == null ? "—" : num(t.lineas_hora, 1), "var(--naranja)")}
+        ${kpi("Solicitudes medidas", num(t.solicitudes_medidas))}
+        ${kpi("Bultos medidos", num(t.bultos_medidos))}
+        ${kpi("Pedidos controlados", num(t.pedidos_controlados))}
+        ${kpi("Errores de lectura evitados", num(t.errores_pick), "var(--aviso)")}
+        ${kpi("Errores / rechazados", num(t.errores), "var(--error)")}
+      </div>
+      <h2>Actividad por hora</h2>${barrasHoras(p.porHora)}
+      <h2>Por operario <span style="font-weight:400;color:var(--tenue);font-size:12px">· tocá un operario para ver todo lo que hizo</span></h2>
+      ${tabla([
+        { t: "Operario", k: "usuario", tipo: "mono" }, { t: "Nombre", k: "nombre" }, { t: "Rol", k: "rol", tipo: "et" }, { t: "Tareas", k: "tareas", tipo: "n" },
+        { t: "Tareas/h", k: "por_hora", tipo: "n", d: 1 }, { t: "Movs.", k: "movimientos", tipo: "n" }, { t: "Transf.", k: "transferencias", tipo: "n" },
+        { t: "OPs", k: "ops_picking", tipo: "n" }, { t: "OPs fin", k: "ops_terminadas", tipo: "n" }, { t: "Líneas", k: "lineas_pick", tipo: "n" },
+        { t: "Unidades", k: "unidades_pick", tipo: "n" }, { t: "Líneas/h", k: "lineas_hora", tipo: "n", d: 1 }, { t: "Min/OP", k: "min_por_op", tipo: "n", d: 1 },
+        { t: "Min picking", k: "min_picking", tipo: "n" }, { t: "Pausas", k: "pausas", tipo: "n" }, { t: "Errores evitados", k: "errores_pick", tipo: "n" },
+        { t: "Sol. medidas", k: "solicitudes_medidas", tipo: "n" }, { t: "Bultos medidos", k: "bultos_medidos", tipo: "n" },
+        { t: "Ped. controlados", k: "pedidos_controlados", tipo: "n" }, { t: "Completos", k: "pedidos_completos", tipo: "n" },
+        { t: "Pos. contadas", k: "posiciones_contadas", tipo: "n" }, { t: "Errores", k: "errores", tipo: "n" }, { t: "Primero", k: "primero" }, { t: "Último", k: "ultimo" }],
+        p.operarios || [], o => detalleOperario(o, q))}
+      <div id="pDetalle"></div>`;
+  } catch (e) { c.innerHTML = `<div class="error">${esc(e.message)}</div>`; }
+}
+async function detalleOperario(o, q) {
+  const d = $("#pDetalle");
+  d.innerHTML = `<div class="vacio">Cargando la actividad de ${esc(o.nombre || o.usuario)}…</div>`;
+  try {
+    const l = await api("/api/productividad/actividad?usuario=" + encodeURIComponent(o.usuario) + "&" + q);
+    d.innerHTML = `<h2>Todo lo que hizo ${esc(o.nombre || o.usuario)} (${l.length})</h2>` + tabla([
+      { t: "Hora", k: "hora", tipo: "hora" }, { t: "Tipo", k: "tipo", tipo: "tipo" }, { t: "Contenedor / Sol.", k: "contenedor", tipo: "mono" },
+      { t: "Artículo", k: "articulo", tipo: "mono" }, { t: "Cant.", k: "cantidad", tipo: "n", d: 2 }, { t: "Origen", k: "origen", tipo: "mono" },
+      { t: "Destino", k: "destino", tipo: "mono" }, { t: "Estado", k: "estado", tipo: "estado" }, { t: "Detalle", k: "detalle", tipo: "largo" }], l);
+    d.scrollIntoView({ behavior: "smooth", block: "start" });
+  } catch (e) { d.innerHTML = `<div class="error">${esc(e.message)}</div>`; }
+}
+
+// ------------------------------------------------------------ movimientos
+function llenarCombos() {
+  const tipos = ["", "transferencia", "guardado", "cambio_estado", "reubicar_cajas", "ajuste", "alta", "picking", "medicion", "control_pedido", "anulacion"];
+  $("#mTipo").innerHTML = tipos.map(t => `<option value="${t}">${t ? esc(et(t)) : "Todos"}</option>`).join("");
+  const est = ["", "pendiente_wms", "aplicado", "registrado", "error", "rechazado", "esperando_autorizacion", "anulado"];
+  $("#mEstado").innerHTML = est.map(t => `<option value="${t}">${t ? esc(et(t)) : "Todos"}</option>`).join("");
+}
+$("#mVer").onclick = () => cargarMovs();
+$("#mTexto").onkeydown = e => { if (e.key === "Enter") cargarMovs(); };
+async function cargarMovs() {
+  const c = $("#mCuerpo");
+  c.innerHTML = `<div class="vacio">Buscando…</div>`;
+  const q = new URLSearchParams({ desde: $("#mDesde").value, hasta: $("#mHasta").value, limite: "1000" });
+  if ($("#mUsuario").value.trim()) q.set("usuario", $("#mUsuario").value.trim());
+  if ($("#mTipo").value) q.set("tipo", $("#mTipo").value);
+  if ($("#mEstado").value) q.set("estado", $("#mEstado").value);
+  if ($("#mTexto").value.trim()) q.set("texto", $("#mTexto").value.trim());
+  try {
+    const r = await api("/api/movimientos?" + q);
+    c.innerHTML = `<p style="color:var(--tenue);margin:10px 0 0">${num(r.total)} movimiento(s)${r.total > r.filas.length ? " · se muestran los últimos " + r.filas.length : ""}</p>` + tabla([
+      { t: "Fecha", k: "hora_servidor", tipo: "hora" }, { t: "Operario", k: "usuario", tipo: "mono" }, { t: "Tipo", k: "tipo", tipo: "tipo" },
+      { t: "Contenedor", k: "contenedor", tipo: "mono" }, { t: "Artículo", k: "articulo", tipo: "mono" }, { t: "Descripción", k: "descripcion" },
+      { t: "Cant.", k: "cantidad", tipo: "n", d: 2 }, { t: "Origen", k: "origen", tipo: "mono" }, { t: "Destino", k: "destino", tipo: "mono" },
+      { t: "Estado", k: "estado", tipo: "estado" }, { t: "Respuesta / comentario", k: "respuesta_wms", tipo: "largo", }], (r.filas || []).map(f => ({ ...f, respuesta_wms: f.respuesta_wms || f.comentario })));
+  } catch (e) { c.innerHTML = `<div class="error">${esc(e.message)}</div>`; }
+}
+
+// ------------------------------------------------------------ picking y control
+$("#kVer").onclick = () => cargarPick();
+async function cargarPick() {
+  const c = $("#kCuerpo");
+  c.innerHTML = `<div class="vacio">Cargando…</div>`;
+  const q = "desde=" + $("#kDesde").value + "&hasta=" + $("#kHasta").value + ($("#kUsuario").value.trim() ? "&usuario=" + encodeURIComponent($("#kUsuario").value.trim()) : "");
+  try {
+    const [ev, ctl] = await Promise.all([api("/api/picking/eventos?" + q), api("/api/control-pedidos?" + q)]);
+    c.innerHTML = `<h2>Controles de pedido (${ctl.length})</h2>` + tabla([
+        { t: "Hora", k: "hora", tipo: "hora" }, { t: "Operario", k: "usuario", tipo: "mono" }, { t: "Solicitud", k: "nro", tipo: "mono" },
+        { t: "Cant. controlada", k: "cantidad", tipo: "n", d: 2 }, { t: "Bultos", k: "bultos", tipo: "n" }, { t: "Resultado", k: "res", tipo: "estado" },
+        { t: "Observación", k: "observacion", tipo: "largo" }, { t: "Telegram", k: "telegram" }], ctl.map(x => ({ ...x, res: x.completo ? "completo" : "parcial" })))
+      + `<h2>Picking y medición (${ev.length} eventos)</h2>` + tabla([
+        { t: "Hora", k: "hora", tipo: "hora" }, { t: "Operario", k: "usuario", tipo: "mono" }, { t: "Evento", k: "tipo", tipo: "tipo" }, { t: "OP / Sol.", k: "op", tipo: "mono" },
+        { t: "Artículo", k: "articulo", tipo: "mono" }, { t: "Cant.", k: "cantidad", tipo: "n", d: 2 }, { t: "Posición", k: "posicion", tipo: "mono" },
+        { t: "Cont. picking", k: "contenedor_picking", tipo: "mono" }, { t: "Detalle", k: "detalle", tipo: "largo" }], ev);
+  } catch (e) { c.innerHTML = `<div class="error">${esc(e.message)}</div>`; }
+}
+
+// ------------------------------------------------------------ arranque
+async function iniciar() {
+  $("#pantallaLogin").classList.add("oculto"); $("#app").classList.remove("oculto");
+  ["pDesde", "pHasta", "mDesde", "mHasta", "kDesde", "kHasta"].forEach(i => $("#" + i).value = hoyStr());
+  llenarCombos();
+  try { const yo = await api("/api/yo"); $("#sub").textContent = (yo.nombre || yo.usuario) + " · " + et(yo.rol); } catch { return; }
+  conectar();
+  cargarVivo();
+  setInterval(() => { if (pestana === "vivo" && document.visibilityState === "visible") cargarVivo(); }, 60000);
+}
+if (token) iniciar(); else $("#pantallaLogin").classList.remove("oculto");
+</script>
+</body>
+</html>

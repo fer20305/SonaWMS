@@ -1,0 +1,79 @@
+SONA DEPOSITO 2.16.2 - INSTALAR EL SERVIDOR EN UN SERVIDOR (Windows o Linux)
+=============================================================================
+
+Que es: el mismo SONA de siempre pero SIN pantalla, funcionando como servicio (arranca solo con el
+servidor, aunque nadie inicie sesion). Atiende a los celulares, al panel de escritorio y a los paneles
+web (/produccion, /ingresos y /supervisor). El panel de escritorio se sigue usando en las PCs, en modo REMOTO.
+
+Requisitos del servidor (cualquiera de los dos sistemas)
+- 64 bits, 2 GB de RAM libres y 2 GB de disco (mas lo que crezcan fotos y caratulas).
+- Que llegue por red al WMS (10.0.50.207 / 203.0.113.10), a les.les-ejemplo.com y account.les-ejemplo.com.
+- Puerto 8080 abierto para la red del deposito (los instaladores abren el firewall del servidor).
+- IP FIJA (los celulares y los paneles apuntan a esa direccion).
+- No hace falta instalar .NET: va incluido.
+
+
+PASO 0 - LLEVAR LOS DATOS (para no perder nada)
+-----------------------------------------------
+En la PC donde hoy corre SONA: cerrar el panel (Sistema > Salir) y copiar ENTERA la carpeta
+    C:\ProgramData\SONA\Deposito
+(sona.db, config.json, secreto.key, fotos, caratulas, respaldos...). secreto.key es imprescindible:
+sin ese archivo hay que volver a cargar todas las claves y todos los usuarios tienen que ingresar de nuevo.
+No usar las dos PCs a la vez: los celulares cargarian en dos bases distintas.
+
+
+OPCION A - SERVIDOR WINDOWS (Windows Server 2016 o posterior / Windows 10-11)   <- RECOMENDADA
+------------------------------------------------------------------------------
+Carpeta: SONA_Servidor_Windows
+1. Pegar los datos del paso 0 en  C:\ProgramData\SONA\Deposito  (crear la carpeta si no existe).
+2. Clic derecho en  instalar-servicio.bat  > Ejecutar como administrador.
+   - Copia el programa a C:\SONA\Servidor, crea el servicio "SONA Deposito" (inicio automatico,
+     se reinicia solo si se cae) y abre el puerto 8080 en el firewall.
+3. Probar desde otra PC:  http://IP-DEL-SERVIDOR:8080/api/estado  (tiene que mostrar "version":"2.16.2").
+Actualizar a una version nueva: reemplazar SonaServidor.exe / wwwroot en esta carpeta y ejecutar
+actualizar.bat como administrador.  Quitar: desinstalar-servicio.bat (los datos no se borran).
+Registro: C:\ProgramData\SONA\Deposito\registro\servidor_AAAAMMDD.log
+
+Impresora de las caratulas (produccion e ingreso) - SOLO en Windows:
+- La caratula se imprime desde el servidor. Instalar la impresora del deposito en el servidor
+  "para todos los usuarios" (impresora de red por puerto TCP/IP, no compartida de una PC).
+- El servicio corre como "Sistema local". Si la impresora no aparece en la lista del panel:
+  services.msc > SONA Deposito > Iniciar sesion > Esta cuenta: un usuario que vea esa impresora
+  (y reiniciar el servicio).
+- Despues: panel de produccion > engranaje > elegir impresora > "Imprimir una prueba".
+
+
+OPCION B - SERVIDOR LINUX (Ubuntu 20.04+, Debian 11+, RHEL/Rocky 8+)
+--------------------------------------------------------------------
+Carpeta: SONA_Servidor_Linux  (copiarla al servidor, por ejemplo con WinSCP)
+1. sudo ./instalar.sh
+   - Instala en /opt/sona-deposito, crea el usuario de sistema "sona", el servicio systemd
+     "sona-deposito" (arranca solo, se reinicia si se cae) y abre el 8080 en ufw/firewalld si estan activos.
+2. Datos: copiar el CONTENIDO de C:\ProgramData\SONA\Deposito a  /var/lib/sona-deposito/  y despues:
+      sudo chown -R sona:sona /var/lib/sona-deposito && sudo systemctl restart sona-deposito
+3. Probar: http://IP-DEL-SERVIDOR:8080/api/estado
+Comandos: estado  systemctl status sona-deposito  |  registro  journalctl -u sona-deposito -f
+Actualizar: reemplazar SonaServidor / wwwroot y  sudo ./actualizar.sh.  Quitar: sudo ./desinstalar.sh
+OJO Linux: la impresion directa de caratulas NO esta disponible (es de Windows). Todo lo demas funciona;
+la caratula se ve con "Ver caratula" y se imprime desde el navegador.
+
+OPCION C - DOCKER (Linux con Docker)
+------------------------------------
+Desde la carpeta SONA_Servidor_Linux:
+    docker compose -f docker/docker-compose.yml up -d --build
+Los datos quedan en SONA_Servidor_Linux/datos (pegar ahi el contenido de C:\ProgramData\SONA\Deposito
+antes del primer arranque). Registro: docker logs -f sona-deposito. Misma limitacion de impresion que Linux.
+
+
+DESPUES DE INSTALAR (cualquier opcion)
+--------------------------------------
+1. Panel de escritorio en cada PC: Sistema > "Servidor: integrado / Docker..." > Remoto >
+   http://IP-DEL-SERVIDOR:8080
+2. ZCFG > direccion local del servidor = http://IP-DEL-SERVIDOR:8080 (es la del QR para los celulares).
+   Si se usa la IP externa: redirigir el puerto 8080 del router al servidor y cargarla tambien.
+3. Celulares: cambiar la direccion del servidor (o escanear el QR nuevo). Si se copio secreto.key no
+   tienen que volver a ingresar.
+4. Paneles web: http://IP-DEL-SERVIDOR:8080/produccion , /ingresos  y  /supervisor
+5. ZEST > Probar conexiones (WMS, tradebox, buscador) desde el servidor nuevo.
+Respaldos: se siguen haciendo solos todos los dias en la carpeta de datos > respaldos (ultimos 30).
+Conviene que sistemas copie esa carpeta a otro lado (backup del servidor).

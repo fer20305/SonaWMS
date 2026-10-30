@@ -1,0 +1,47 @@
+# .NET
+bin/
+obj/
+*.user
+.vs/
+*.suo
+TestResults/
+
+# panel web: se genera con `npm run build` (va a servidor/panel-web)
+node_modules/
+web/dist/
+servidor/panel-web/
+*.tsbuildinfo
+
+# Android
+android/.gradle/
+android/.kotlin/
+android/build/
+android/app/build/
+android/local.properties
+android/firma/
+*.keystore
+*.jks
+*.apk
+*.aab
+
+# datos y secretos: NUNCA al repositorio
+datos/
+*.db
+*.db-wal
+*.db-shm
+secreto.key
+config.json
+capturas/
+perfil_navegador/
+respaldos/
+
+# entregas armadas
+entrega_*/
+q[0-9]*_[0-9][0-9]
+*.zip
+
+# sistema
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

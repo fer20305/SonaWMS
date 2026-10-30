@@ -1,0 +1,14 @@
+# Desde la carpeta SONA_Servidor_Linux:  docker compose -f docker/docker-compose.yml up -d --build
+# Registro: docker logs -f sona-deposito      Datos: ./datos (al lado de esta carpeta)
+services:
+  sona:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: sona-deposito:2.14
+    container_name: sona-deposito
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - ../datos:/datos

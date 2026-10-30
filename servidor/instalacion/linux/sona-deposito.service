@@ -1,0 +1,20 @@
+[Unit]
+Description=SONA Deposito - servidor (celulares, panel y panel web de produccion)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=notify
+User=sona
+Group=sona
+WorkingDirectory=/opt/sona-deposito
+ExecStart=/opt/sona-deposito/SonaServidor
+Environment=SONA_DATOS=/var/lib/sona-deposito
+Environment=SONA_PUERTO=8080
+Environment=TZ=America/Argentina/Buenos_Aires
+Environment=DOTNET_BUNDLE_EXTRACT_BASE_DIR=/var/lib/sona-deposito/.net
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

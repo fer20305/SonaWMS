@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>SonaDeposito</AssemblyName>
+    <RootNamespace>Sona.Panel</RootNamespace>
+    <ApplicationIcon>sona-icono.ico</ApplicationIcon>
+    <Version>2.0.0</Version>
+    <Product>SONA Depósito</Product>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <NoWarn>CS1998;CS8618;CS8602;CS8604</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Sona.Core\Sona.Core.csproj" />
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="8.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="sona-icono.ico" />
+    <Content Include="..\..\panel-web\**\*" LinkBase="wwwroot" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>
